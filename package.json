@@ -1,17 +1,16 @@
 {
-  "name": "TONYY SHOP",
+  "name": "tonyshop",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^5.2.1",
-    "express-session": "^1.19.0",
-    "serverless-http": "^4.0.0"
+    "express": "^4.18.2",
+    "express-session": "^1.17.3"
   }
 }
