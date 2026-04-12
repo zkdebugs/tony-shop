@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TONYSHOP — CATALOG</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #050810; --surface: #0d1117; --surface2: #111820; --border: #1e2d40;
+      --accent: #f7c948; --accent2: #e63946; --green: #4ade80; --blue: #60a5fa;
+      --purple: #a78bfa; --text: #c9d8e8; --muted: #4a6080;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); font-family: 'Share Tech Mono', monospace; color: var(--text); min-height: 100vh; }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+      pointer-events: none; z-index: 999;
+    }
+    .topbar {
+      background: rgba(5, 8, 16, 0.95);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+    .topbar-left { display: flex; align-items: center; gap: 32px; }
+    .logo {
+      font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: 900;
+      color: var(--accent); letter-spacing: 4px; text-decoration: none;
+      text-shadow: 0 0 20px rgba(247, 201, 72, 0.4);
+    }
+    .nav-badge { font-size: 9px; letter-spacing: 3px; color: var(--muted); border: 1px solid var(--border); padding: 3px 8px; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .search-bar {
+      background: rgba(0,0,0,0.4); border: 1px solid var(--border);
+      color: var(--text); font-family: 'Share Tech Mono', monospace;
+      font-size: 12px; padding: 8px 14px; width: 280px;
+      outline: none; letter-spacing: 1px; transition: border-color 0.2s;
+    }
+    .search-bar:focus { border-color: var(--accent); }
+    .search-bar::placeholder { color: var(--muted); }
+    .cart-btn {
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); font-family: 'Share Tech Mono', monospace;
+      font-size: 12px; letter-spacing: 2px; padding: 8px 16px;
+      cursor: pointer; transition: border-color 0.2s, color 0.2s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .cart-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .cart-count {
+      background: var(--accent); color: #000; font-size: 10px; font-weight: bold;
+      width: 18px; height: 18px; display: flex; align-items: center; justify-content: center;
+    }
+    .logout-btn {
+      background: none; border: 1px solid var(--border); color: var(--muted);
+      font-family: 'Share Tech Mono', monospace; font-size: 11px;
+      letter-spacing: 1px; padding: 8px 12px; cursor: pointer; transition: border-color 0.2s, color 0.2s;
+    }
+    .logout-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+    .notice-banner {
+      background: rgba(247, 201, 72, 0.06); border-bottom: 1px solid rgba(247, 201, 72, 0.15);
+      padding: 8px 24px; font-size: 11px; letter-spacing: 2px; color: var(--accent); text-align: center;
+    }
+    .main-layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 85px); }
+    .sidebar {
+      border-right: 1px solid var(--border); padding: 24px 0;
+      position: sticky; top: 85px; height: calc(100vh - 85px); overflow-y: auto;
+    }
+    .sidebar-title { font-size: 9px; letter-spacing: 4px; color: var(--muted); padding: 0 20px 12px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+    .filter-btn {
+      display: block; width: 100%; background: none;
+      border: none; border-left: 2px solid transparent;
+      color: var(--muted); font-family: 'Share Tech Mono', monospace;
+      font-size: 11px; letter-spacing: 2px; padding: 10px 20px;
+      text-align: left; cursor: pointer; transition: all 0.15s;
+    }
+    .filter-btn:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+    .filter-btn.active { border-left-color: var(--accent); color: var(--accent); background: rgba(247, 201, 72, 0.05); }
+    .content { padding: 32px; }
+    .content-header { margin-bottom: 28px; }
+    .content-title { font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 700; color: var(--accent); letter-spacing: 3px; }
+    .content-sub { font-size: 11px; color: var(--muted); margin-top: 6px; letter-spacing: 2px; }
+    .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+    .product-card {
+      background: var(--surface); border: 1px solid var(--border);
+      overflow: hidden; transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      cursor: pointer; position: relative;
+    }
+    .product-card:hover { border-color: rgba(247, 201, 72, 0.4); transform: translateY(-3px); box-shadow: 0 8px 30px rgba(247, 201, 72, 0.08); }
+    .card-badge { position: absolute; top: 10px; left: 10px; font-size: 9px; font-weight: bold; letter-spacing: 2px; padding: 3px 8px; z-index: 2; }
+    .badge-hot { background: var(--accent2); color: #fff; }
+    .badge-new { background: var(--green); color: #000; }
+    .badge-rare { background: var(--purple); color: #fff; }
+    .badge-limited { background: var(--blue); color: #000; }
+    .badge-deal { background: var(--accent); color: #000; }
+    .card-img-wrap { height: 200px; background: #080d14; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 12px; }
+    .card-img-wrap img { max-height: 100%; max-width: 100%; object-fit: contain; transition: transform 0.3s; }
+    .product-card:hover .card-img-wrap img { transform: scale(1.05); }
+    .card-info { padding: 14px; border-top: 1px solid var(--border); }
+    .card-name { font-family: 'Orbitron', sans-serif; font-size: 12px; font-weight: 700; color: var(--text); letter-spacing: 1px; margin-bottom: 4px; line-height: 1.4; }
+    .card-set { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 10px; }
+    .card-meta { display: flex; justify-content: space-between; align-items: center; }
+    .card-price { font-family: 'Orbitron', sans-serif; font-size: 16px; font-weight: 700; color: var(--accent); }
+    .card-rarity { font-size: 9px; color: var(--muted); letter-spacing: 1px; }
+    .card-actions { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--border); }
+    .card-btn {
+      background: none; border: none; border-right: 1px solid var(--border);
+      color: var(--muted); font-family: 'Share Tech Mono', monospace;
+      font-size: 10px; letter-spacing: 1px; padding: 10px 6px;
+      cursor: pointer; transition: all 0.15s; text-align: center;
+    }
+    .card-btn:last-child { border-right: none; }
+    .card-btn:hover { background: rgba(247, 201, 72, 0.08); color: var(--accent); }
+    .card-btn.quick { color: var(--accent); }
+    .cart-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(4px);
+    }
+    .cart-overlay.open { opacity: 1; pointer-events: all; }
+    .cart-drawer {
+      position: fixed; top: 0; right: 0; width: 380px; height: 100vh;
+      background: var(--surface); border-left: 1px solid var(--border); z-index: 201;
+      transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex; flex-direction: column;
+    }
+    .cart-drawer.open { transform: translateX(0); }
+    .cart-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .cart-title { font-family: 'Orbitron', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 3px; color: var(--accent); }
+    .cart-close { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; transition: color 0.2s; }
+    .cart-close:hover { color: var(--accent2); }
+    .cart-items { flex: 1; overflow-y: auto; padding: 20px 24px; }
+    .cart-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .cart-item-name { flex: 1; font-size: 12px; line-height: 1.4; }
+    .cart-item-price { color: var(--accent); font-size: 13px; font-family: 'Orbitron', sans-serif; }
+    .qty-controls { display: flex; align-items: center; gap: 8px; }
+    .qty-btn {
+      background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+      width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 14px; transition: border-color 0.2s;
+    }
+    .qty-btn:hover { border-color: var(--accent); }
+    .cart-footer { padding: 20px 24px; border-top: 1px solid var(--border); }
+    .cart-total-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .cart-total-label { font-size: 11px; letter-spacing: 3px; color: var(--muted); }
+    .cart-total-amount { font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 700; color: var(--accent); }
+    .checkout-btn {
+      width: 100%; background: linear-gradient(90deg, var(--accent), #f0a500);
+      border: none; color: #000; font-family: 'Orbitron', sans-serif;
+      font-size: 12px; font-weight: 700; letter-spacing: 3px; padding: 16px;
+      cursor: pointer; transition: box-shadow 0.2s;
+    }
+    .checkout-btn:hover { box-shadow: 0 0 30px rgba(247, 201, 72, 0.4); }
+    .empty-cart { text-align: center; color: var(--muted); font-size: 12px; letter-spacing: 2px; padding: 40px 0; }
+  </style>
+<base target="_blank">
+<base target="_blank">
+</head>
+<body>
+  <div class="notice-banner"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641z"/></svg> PREMIUM PHARMACEUTICALS — DISCREET DELIVERY — LAB TESTED</div>
+  <header class="topbar">
+    <div class="topbar-left">
+      <a href="/catalog" class="logo">TONYSHOP</a>
+      <span class="nav-badge">PHARMACY</span>
+    </div>
+    <div class="topbar-right">
+      <input type="text" class="search-bar" id="search-input" placeholder="Search products, categories..." oninput="filterProducts()">
+      <button class="cart-btn" onclick="toggleCart()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg> CART <span class="cart-count" id="cart-count">0</span>
+      </button>
+      <form action="/auth/logout" method="POST" style="display:inline">
+        <button type="submit" class="logout-btn">LOGOUT</button>
+      </form>
+    </div>
+  </header>
+  <div class="main-layout">
+    <aside class="sidebar">
+      <div class="sidebar-title">DRUG CLASS</div>
+      <div id="filter-buttons"></div>
+    </aside>
+    <main class="content">
+      <div class="content-header">
+        <div class="content-title">AVAILABLE STOCK</div>
+        <div class="content-sub">Premium quality • Lab verified • Street ready</div>
+      </div>
+      <div class="product-grid" id="product-grid"></div>
+    </main>
+  </div>
+  <div class="cart-overlay" id="cart-overlay" onclick="toggleCart()"></div>
+  <div class="cart-drawer" id="cart-drawer">
+    <div class="cart-header">
+      <span class="cart-title">CART</span>
+      <button class="cart-close" onclick="toggleCart()"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="display:inline-block;vertical-align:middle"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/></svg></button>
+    </div>
+    <div class="cart-items" id="cart-items-list">
+      <div class="empty-cart">CART IS EMPTY</div>
+    </div>
+    <div class="cart-footer">
+      <div class="cart-total-row">
+        <span class="cart-total-label">TOTAL:</span>
+        <span class="cart-total-amount" id="cart-total">£0.00</span>
+      </div>
+      <button class="checkout-btn" onclick="goCheckout()">PROCEED TO CHECKOUT</button>
+    </div>
+  </div>
+  <script>
+    const allProducts = [
+      {id: 1, name: "Cocaine (1g)", set: "Pure Fishscale", condition: "92% Purity", price: 80.00, rarity: "STIMULANTS", badge: "HOT", img: "https://i.imgur.com/coke1g.png"},
+      {id: 2, name: "Methamphetamine (3.5g)", set: "Crystal Blue", condition: "Lab Grade", price: 120.00, rarity: "STIMULANTS", badge: "DEAL", img: "https://i.imgur.com/meth35.png"},
+      {id: 3, name: "Heroin (0.5g)", set: "China White", condition: "Pure Afghan", price: 45.00, rarity: "OPIODS", badge: "RARE", img: "https://i.imgur.com/heroin.png"},
+      {id: 4, name: "Oxycodone 80mg", set: "OC Original", condition: "Pharma Grade", price: 35.00, rarity: "PRESCRIPTION", badge: "LIMITED", img: "https://i.imgur.com/oxy80.png"},
+      {id: 5, name: "Xanax 2mg Bars", set: "Pfizer", condition: "Pressed", price: 8.00, rarity: "PRESCRIPTION", badge: "NEW", img: "https://i.imgur.com/xanax.png"},
+      {id: 6, name: "LSD Blotter (250ug)", set: "Voidrealms", condition: "Tested", price: 15.00, rarity: "HALLUCINOGENS", badge: "", img: "https://i.imgur.com/lsd.png"},
+      {id: 7, name: "MDMA Crystals (1g)", set: "Dutch Import", condition: "84% Pure", price: 40.00, rarity: "HALLUCINOGENS", badge: "HOT", img: "https://i.imgur.com/mdma.png"},
+      {id: 8, name: "Ketamine (1g)", set: "S-Isomer", condition: "Vet Grade", price: 55.00, rarity: "HALLUCINOGENS", badge: "", img: "https://i.imgur.com/ket.png"},
+      {id: 9, name: "Fentanyl Patch 100mcg", set: "Duragesic", condition: "Pharma", price: 150.00, rarity: "OPIODS", badge: "RARE", img: "https://i.imgur.com/fent.png"},
+      {id: 10, name: "Adderall 30mg XR", set: "Teva", condition: "Script", price: 12.00, rarity: "PRESCRIPTION", badge: "", img: "https://i.imgur.com/adderall.png"},
+      {id: 11, name: "Crack Cocaine (0.5g)", set: "Rock", condition: "Street", price: 25.00, rarity: "STIMULANTS", badge: "DEAL", img: "https://i.imgur.com/crack.png"},
+      {id: 12, name: "Glass Pipe", set: "Pyrex", condition: "New", price: 15.00, rarity: "PARAPHERNALIA", badge: "", img: "https://i.imgur.com/pipe.png"},
+      {id: 13, name: "Syringe Pack (10ct)", set: "BD", condition: "Sterile", price: 10.00, rarity: "PARAPHERNALIA", badge: "", img: "https://i.imgur.com/syringe.png"},
+      {id: 14, name: "Digital Scale (0.01g)", set: "AWS", condition: "New", price: 25.00, rarity: "PARAPHERNALIA", badge: "", img: "https://i.imgur.com/scale.png"},
+      {id: 15, name: "Baggies (100pk)", set: "Ziplock", condition: "Small", price: 5.00, rarity: "PARAPHERNALIA", badge: "DEAL", img: "https://i.imgur.com/baggies.png"},
+      {id: 16, name: "Weed (3.5g)", set: "OG Kush", condition: "Top Shelf", price: 35.00, rarity: "HALLUCINOGENS", badge: "HOT", img: "https://i.imgur.com/weed.png"},
+      {id: 17, name: "Hashish (1g)", set: "Moroccan", condition: "Imported", price: 20.00, rarity: "HALLUCINOGENS", badge: "", img: "https://i.imgur.com/hash.png"},
+      {id: 18, name: "DMT (0.5g)", set: "Crystal", condition: "99% Pure", price: 100.00, rarity: "HALLUCINOGENS", badge: "RARE", img: "https://i.imgur.com/dmt.png"},
+      {id: 19, name: "Morphine 30mg", set: "Roxanol", condition: "Liquid", price: 25.00, rarity: "OPIODS", badge: "", img: "https://i.imgur.com/morph.png"},
+      {id: 20, name: "Codeine Syrup (8oz)", set: "Hi-Tech", condition: "Lean", price: 200.00, rarity: "PRESCRIPTION", badge: "LIMITED", img: "https://i.imgur.com/lean.png"},
+      {id: 21, name: "Percocet 10mg", set: "Endo", condition: "Script", price: 15.00, rarity: "PRESCRIPTION", badge: "", img: "https://i.imgur.com/perc.png"},
+      {id: 22, name: "Suboxone 8mg", set: "Reckitt", condition: "Strip", price: 20.00, rarity: "PRESCRIPTION", badge: "", img: "https://i.imgur.com/sub.png"},
+      {id: 23, name: "Ritalin 20mg", set: "Novartis", condition: "Script", price: 10.00, rarity: "PRESCRIPTION", badge: "", img: "https://i.imgur.com/ritalin.png"},
+      {id: 24, name: "Valium 10mg", set: "Roche", condition: "Pressed", price: 6.00, rarity: "PRESCRIPTION", badge: "DEAL", img: "https://i.imgur.com/valium.png"},
+      {id: 25, name: "Speed Paste (10g)", set: "Dutch", condition: "Wet", price: 60.00, rarity: "STIMULANTS", badge: "", img: "https://i.imgur.com/speed.png"},
+      {id: 26, name: "GHB (50ml)", set: "Liquid", condition: "Lab", price: 45.00, rarity: "HALLUCINOGENS", badge: "", img: "https://i.imgur.com/ghb.png"},
+      {id: 27, name: "Nitrous (24ct)", set: "Whippits", condition: "Food Grade", price: 30.00, rarity: "PARAPHERNALIA", badge: "", img: "https://i.imgur.com/nos.png"},
+      {id: 28, name: "Bong (12in)", set: "Glass", condition: "Beaker", price: 80.00, rarity: "PARAPHERNALIA", badge: "", img: "https://i.imgur.com/bong.png"},
+      {id: 29, name: "Grinder (4pc)", set: "Metal", condition: "Sharpstone", price: 35.00, rarity: "PARAPHERNALIA", badge: "", img: "https://i.imgur.com/grinder.png"},
+      {id: 30, name: "Rolling Papers (50pk)", set: "Raw", condition: "King Size", price: 8.00, rarity: "PARAPHERNALIA", badge: "DEAL", img: "https://i.imgur.com/papers.png"}
+    ];
+
+    let cart = JSON.parse(localStorage.getItem('TONYY SHOP_cart') || '[]');
+    let activeCategory = 'ALL';
+    const categories = ['ALL', 'STIMULANTS', 'OPIODS', 'HALLUCINOGENS', 'PRESCRIPTION', 'PARAPHERNALIA'];
+
+    const filterContainer = document.getElementById('filter-buttons');
+    categories.forEach(cat => {
+      const btn = document.createElement('button');
+      btn.className = 'filter-btn' + (cat === 'ALL' ? ' active' : '');
+      btn.textContent = cat;
+      btn.onclick = () => setCategory(cat);
+      filterContainer.appendChild(btn);
+    });
+
+    function setCategory(cat) {
+      activeCategory = cat;
+      document.querySelectorAll('.filter-btn').forEach((b, i) => b.classList.toggle('active', categories[i] === cat));
+      renderProducts();
+    }
+
+    function filterProducts() { renderProducts(); }
+
+    function renderProducts() {
+      const search = document.getElementById('search-input').value.toLowerCase();
+      let filtered = allProducts.filter(p => {
+        const matchCat = activeCategory === 'ALL' || p.rarity.toUpperCase() === activeCategory;
+        const matchSearch = !search || p.name.toLowerCase().includes(search) || p.set.toLowerCase().includes(search) || p.rarity.toLowerCase().includes(search);
+        return matchCat && matchSearch;
+      });
+      const grid = document.getElementById('product-grid');
+      if (!filtered.length) { grid.innerHTML = '<div style="color:var(--muted);font-size:12px;letter-spacing:2px;padding:40px 0;">NO PRODUCTS FOUND</div>'; return; }
+      grid.innerHTML = filtered.map(p => `
+        <div class="product-card">
+          ${p.badge ? `<span class="card-badge badge-${p.badge.toLowerCase()}">${p.badge}</span>` : ''}
+          <div class="card-img-wrap">
+            <img src="${p.img}" alt="${p.name}" loading="lazy" onerror="this.style.opacity='0.2'">
+          </div>
+          <div class="card-info">
+            <div class="card-name">${p.name}</div>
+            <div class="card-set">${p.set} • ${p.condition}</div>
+            <div class="card-meta">
+              <span class="card-price">£${p.price.toFixed(2)}</span>
+              <span class="card-rarity">${p.rarity}</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn quick" onclick="addToCart(${p.id})"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641z"/></svg> QUICK ADD</button>
+            <button class="card-btn" onclick="addToCart(${p.id}); toggleCart()"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg> STASH</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function addToCart(id) {
+      const product = allProducts.find(p => p.id === id);
+      if (!product) return;
+      const existing = cart.find(i => i.id === id);
+      if (existing) existing.qty++;
+      else cart.push({ id: product.id, name: product.name, price: product.price, qty: 1 });
+      saveCart(); updateCartUI();
+    }
+
+    function removeFromCart(id) { cart = cart.filter(i => i.id !== id); saveCart(); updateCartUI(); }
+
+    function changeQty(id, delta) {
+      const item = cart.find(i => i.id === id);
+      if (!item) return;
+      item.qty += delta;
+      if (item.qty <= 0) removeFromCart(id);
+      else { saveCart(); updateCartUI(); }
+    }
+
+    function saveCart() { localStorage.setItem('TONYY SHOP_cart', JSON.stringify(cart)); }
+
+    function updateCartUI() {
+      const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+      const count = cart.reduce((s, i) => s + i.qty, 0);
+      document.getElementById('cart-count').textContent = count;
+      document.getElementById('cart-total').textContent = '£' + total.toFixed(2);
+      const list = document.getElementById('cart-items-list');
+      if (!cart.length) { list.innerHTML = '<div class="empty-cart">CART IS EMPTY</div>'; return; }
+      list.innerHTML = cart.map(i => `
+        <div class="cart-item">
+          <div class="cart-item-name">
+            <div style="color:var(--text);margin-bottom:2px">${i.name}</div>
+            <div style="color:var(--muted);font-size:10px">£${i.price.toFixed(2)} each</div>
+          </div>
+          <div class="qty-controls">
+            <button class="qty-btn" onclick="changeQty(${i.id}, -1)">−</button>
+            <span style="font-size:13px;min-width:16px;text-align:center">${i.qty}</span>
+            <button class="qty-btn" onclick="changeQty(${i.id}, 1)">+</button>
+          </div>
+          <div class="cart-item-price">£${(i.price * i.qty).toFixed(2)}</div>
+        </div>
+      `).join('');
+    }
+
+    function toggleCart() {
+      document.getElementById('cart-overlay').classList.toggle('open');
+      document.getElementById('cart-drawer').classList.toggle('open');
+    }
+
+    function goCheckout() { if (cart.length) window.location.href = '/checkout'; }
+
+    renderProducts();
+    updateCartUI();
+  </script>
+</body>
+</html>

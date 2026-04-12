@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TONYSHOP — CHECKOUT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    :root {
+      --bg: #050810; --surface: #0d1117; --surface2: #111820; --border: #1e2d40;
+      --accent: #f7c948; --accent2: #e63946; --green: #4ade80; --text: #c9d8e8; --muted: #4a6080;
+      --crypto: #00d4aa;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); font-family: 'Share Tech Mono', monospace; color: var(--text); min-height: 100vh; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+      pointer-events: none; z-index: 999;
+    }
+    .topbar {
+      background: rgba(5, 8, 16, 0.95); border-bottom: 1px solid var(--border);
+      padding: 0 32px; height: 60px; display: flex; align-items: center; justify-content: space-between;
+      backdrop-filter: blur(10px);
+    }
+    .logo { font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: 900; color: var(--accent); letter-spacing: 4px; text-decoration: none; }
+    .back-btn {
+      background: none; border: 1px solid var(--border); color: var(--muted);
+      font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 2px;
+      padding: 8px 16px; cursor: pointer; text-decoration: none; transition: all 0.2s;
+    }
+    .back-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .page-content { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+    .page-title { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; color: var(--accent); letter-spacing: 4px; margin-bottom: 32px; }
+    .checkout-grid { display: grid; grid-template-columns: 1fr 420px; gap: 24px; }
+    .panel { background: var(--surface); border: 1px solid var(--border); padding: 28px; }
+    .panel-title { font-family: 'Orbitron', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 3px; color: var(--accent); margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .order-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .order-row:last-of-type { border-bottom: none; }
+    .order-item-name { font-size: 13px; }
+    .order-item-qty { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .order-item-price { color: var(--accent); font-family: 'Orbitron', sans-serif; font-size: 15px; }
+    .totals-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .total-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 12px; }
+    .total-row .label { color: var(--muted); letter-spacing: 2px; }
+    .grand-total { display: flex; justify-content: space-between; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+    .grand-total .label { font-family: 'Orbitron', sans-serif; font-size: 13px; font-weight: 700; color: var(--text); letter-spacing: 2px; }
+    .grand-total .value { font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 700; color: var(--accent); }
+    .option-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+    .option-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--border); cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+    .option-item:hover { background: rgba(247, 201, 72, 0.03); }
+    .option-item.selected { border-color: var(--accent); background: rgba(247, 201, 72, 0.05); }
+    .option-item.crypto-selected { border-color: var(--crypto); background: rgba(0, 212, 170, 0.05); }
+    .option-radio { width: 14px; height: 14px; border: 1px solid var(--border); border-radius: 50%; flex-shrink: 0; position: relative; transition: border-color 0.2s; }
+    .option-item.selected .option-radio { border-color: var(--accent); }
+    .option-item.crypto-selected .option-radio { border-color: var(--crypto); }
+    .option-item.selected .option-radio::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 6px; height: 6px; background: var(--accent); border-radius: 50%; }
+    .option-item.crypto-selected .option-radio::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 6px; height: 6px; background: var(--crypto); border-radius: 50%; }
+    .option-label { flex: 1; font-size: 12px; letter-spacing: 1px; }
+    .option-price { color: var(--accent); font-size: 12px; }
+    .option-badge { font-size: 9px; letter-spacing: 2px; padding: 2px 6px; background: var(--green); color: #000; font-weight: bold; }
+    .crypto-badge { font-size: 9px; letter-spacing: 2px; padding: 2px 6px; background: var(--crypto); color: #000; font-weight: bold; }
+    .form-group { margin-bottom: 16px; }
+    .form-label { font-size: 10px; letter-spacing: 3px; color: var(--muted); display: block; margin-bottom: 6px; }
+    .form-input, .form-textarea {
+      width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border);
+      color: var(--text); font-family: 'Share Tech Mono', monospace;
+      font-size: 13px; padding: 12px 14px; outline: none; transition: border-color 0.2s; letter-spacing: 1px;
+    }
+    .form-textarea { resize: vertical; min-height: 80px; }
+    .form-input:focus, .form-textarea:focus { border-color: var(--accent); }
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--muted); }
+    .hint-row { display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--muted); margin-top: 8px; letter-spacing: 1px; }
+    .submit-btn {
+      width: 100%; background: linear-gradient(90deg, var(--accent), #f0a500);
+      border: none; color: #000; font-family: 'Orbitron', sans-serif;
+      font-size: 13px; font-weight: 700; letter-spacing: 3px; padding: 18px;
+      cursor: pointer; margin-top: 24px; transition: box-shadow 0.2s, opacity 0.2s;
+    }
+    .submit-btn:hover { box-shadow: 0 0 30px rgba(247, 201, 72, 0.4); }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .crypto-btn {
+      width: 100%; background: linear-gradient(90deg, var(--crypto), #00a884);
+      border: none; color: #000; font-family: 'Orbitron', sans-serif;
+      font-size: 13px; font-weight: 700; letter-spacing: 3px; padding: 18px;
+      cursor: pointer; margin-top: 12px; transition: box-shadow 0.2s, opacity 0.2s;
+    }
+    .crypto-btn:hover { box-shadow: 0 0 30px rgba(0, 212, 170, 0.4); }
+    .crypto-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .error-msg { background: rgba(230, 57, 70, 0.1); border: 1px solid rgba(230, 57, 70, 0.3); color: var(--accent2); font-size: 11px; padding: 10px 14px; margin-top: 12px; display: none; letter-spacing: 1px; }
+    .error-msg.show { display: block; }
+    .empty-checkout { text-align: center; padding: 60px 0; color: var(--muted); letter-spacing: 2px; }
+    .empty-checkout a { color: var(--accent); text-decoration: none; display: inline-block; margin-top: 16px; border: 1px solid var(--accent); padding: 10px 20px; font-size: 12px; letter-spacing: 2px; }
+
+    /* Crypto Payment Modal */
+    .crypto-modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(5, 8, 16, 0.95);
+      z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(10px);
+    }
+    .crypto-modal-overlay.show { display: flex; }
+    .crypto-modal {
+      background: var(--surface); border: 1px solid var(--crypto); padding: 32px;
+      max-width: 480px; width: 90%; position: relative;
+    }
+    .crypto-modal-title {
+      font-family: 'Orbitron', sans-serif; font-size: 16px; font-weight: 700;
+      color: var(--crypto); letter-spacing: 3px; margin-bottom: 24px; text-align: center;
+    }
+    .crypto-address-box {
+      background: rgba(0,0,0,0.4); border: 1px solid var(--border); padding: 16px;
+      margin-bottom: 20px; text-align: center;
+    }
+    .crypto-address-label {
+      font-size: 10px; letter-spacing: 2px; color: var(--muted); margin-bottom: 8px;
+    }
+    .crypto-address {
+      font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--crypto);
+      word-break: break-all; margin-bottom: 12px;
+    }
+    .crypto-qr-container {
+      width: 180px; height: 180px; background: #fff; margin: 0 auto 16px;
+      padding: 10px; border-radius: 4px;
+    }
+    .crypto-qr-container img, .crypto-qr-container canvas {
+      width: 160px !important; height: 160px !important;
+    }
+    .crypto-amount {
+      font-family: 'Orbitron', sans-serif; font-size: 24px; color: var(--accent); margin-bottom: 8px;
+    }
+    .crypto-network {
+      font-size: 11px; color: var(--muted); letter-spacing: 2px; margin-bottom: 20px;
+    }
+    .crypto-status {
+      font-size: 11px; letter-spacing: 2px; padding: 12px; text-align: center;
+      background: rgba(0, 212, 170, 0.1); border: 1px solid rgba(0, 212, 170, 0.3);
+      color: var(--crypto); margin-bottom: 16px;
+    }
+    .crypto-status.pending::before { content: '[WAITING] '; }
+    .crypto-status.confirmed::before { content: '[OK] '; }
+    .crypto-status.failed::before { content: '[X] '; }
+    .crypto-close {
+      background: none; border: 1px solid var(--border); color: var(--muted);
+      font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 2px;
+      padding: 10px 20px; cursor: pointer; width: 100%; transition: all 0.2s;
+    }
+    .crypto-close:hover { border-color: var(--accent2); color: var(--accent2); }
+    .crypto-timer {
+      font-size: 11px; color: var(--muted); text-align: center; margin-top: 12px;
+    }
+    .crypto-copy-btn {
+      background: var(--crypto); border: none; color: #000; font-size: 10px;
+      letter-spacing: 2px; padding: 6px 12px; cursor: pointer; margin-left: 8px;
+    }
+
+    /* WhatsApp Forward Modal */
+    .whatsapp-modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(5, 8, 16, 0.95);
+      z-index: 1001; align-items: center; justify-content: center; backdrop-filter: blur(10px);
+    }
+    .whatsapp-modal-overlay.show { display: flex; }
+    .whatsapp-modal {
+      background: var(--surface); border: 1px solid var(--green); padding: 32px;
+      max-width: 440px; width: 90%; text-align: center;
+    }
+    .whatsapp-modal-title {
+      font-family: 'Orbitron', sans-serif; font-size: 16px; font-weight: 700;
+      color: var(--green); letter-spacing: 3px; margin-bottom: 16px;
+    }
+    .whatsapp-modal-text {
+      font-size: 12px; color: var(--text); margin-bottom: 24px; line-height: 1.6;
+    }
+    .whatsapp-btn {
+      background: linear-gradient(90deg, var(--green), #22c55e); border: none; color: #000;
+      font-family: 'Orbitron', sans-serif; font-size: 13px; font-weight: 700;
+      letter-spacing: 2px; padding: 16px 32px; cursor: pointer; text-decoration: none;
+      display: inline-block; transition: box-shadow 0.2s;
+    }
+    .whatsapp-btn:hover { box-shadow: 0 0 30px rgba(74, 222, 128, 0.4); }
+    .order-ref {
+      font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--accent);
+      background: rgba(247, 201, 72, 0.1); padding: 8px 16px; margin-bottom: 20px;
+      border: 1px solid rgba(247, 201, 72, 0.3);
+    }
+  </style>
+<base target="_blank">
+</head>
+<body>
+  <header class="topbar">
+    <span onclick="window.location.href='/catalog'" class="logo" style="cursor:pointer;">TONYSHOP</span>
+    <button onclick="window.location.href='/catalog'" class="back-btn" style="background:none;border:1px solid var(--border);color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;padding:8px 16px;cursor:pointer;text-decoration:none;transition:all 0.2s;"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style="display:inline-block;vertical-align:middle;margin-right:6px"><path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg> CONTINUE SHOPPING</button>
+  </header>
+
+  <div class="page-content">
+    <div class="page-title">CHECKOUT</div>
+    <div id="empty-state" style="display:none" class="empty-checkout">
+      <div>YOUR CART IS EMPTY</div>
+      <button onclick="window.location.href='/catalog'" style="margin-top:16px;border:1px solid var(--accent);background:none;color:var(--accent);padding:10px 20px;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;">BROWSE CATALOG</button>
+    </div>
+    <div class="checkout-grid" id="checkout-grid">
+      <div>
+        <div class="panel" style="margin-bottom:20px">
+          <div class="panel-title">ORDER SUMMARY</div>
+          <div id="order-items"></div>
+          <div class="totals-section">
+            <div class="total-row"><span class="label">SUBTOTAL:</span><span id="subtotal">£0.00</span></div>
+            <div class="total-row"><span class="label">DELIVERY:</span><span id="delivery-cost">£6.00</span></div>
+            <div class="grand-total">
+              <span class="label">TOTAL DUE:</span>
+              <span class="value" id="grand-total">£0.00</span>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">YOUR DETAILS</div>
+          <div class="form-group">
+            <label class="form-label">FULL NAME</label>
+            <input type="text" class="form-input" id="field-name" placeholder="Enter your full name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">PHONE NUMBER</label>
+            <input type="tel" class="form-input" id="field-phone" placeholder="e.g. 07700 900000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">DELIVERY ADDRESS</label>
+            <textarea class="form-textarea" id="field-address" placeholder="Full address including postcode"></textarea>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="panel" style="margin-bottom:20px">
+          <div class="panel-title">DELIVERY METHOD</div>
+          <div class="option-list" id="delivery-options">
+            <div class="option-item selected" data-cost="6" data-label="Delivery in Person" onclick="selectDelivery(this)">
+              <div class="option-radio"></div><span class="option-label">Delivery in Person</span><span class="option-price">£6</span>
+            </div>
+            <div class="option-item" data-cost="6" data-label="Tracked 24 Recorded" onclick="selectDelivery(this)">
+              <div class="option-radio"></div><span class="option-label">Tracked 24 Recorded</span><span class="option-price">£6</span>
+            </div>
+            <div class="option-item" data-cost="10" data-label="Special Delivery by 1pm" onclick="selectDelivery(this)">
+              <div class="option-radio"></div><span class="option-label">Special Delivery by 1pm</span><span class="option-price">£10</span>
+            </div>
+            <div class="option-item" data-cost="14" data-label="Saturday Special Delivery" onclick="selectDelivery(this)">
+              <div class="option-radio"></div><span class="option-label">Saturday Special Delivery</span><span class="option-price">£14</span>
+            </div>
+            <div class="option-item" data-cost="25" data-label="International Delivery" onclick="selectDelivery(this)">
+              <div class="option-radio"></div><span class="option-label">International Delivery</span><span class="option-price">£25</span>
+            </div>
+          </div>
+          <div class="hint-row"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641z"/></svg> TRACKING ENABLED • SAME DAY DISPATCH BEFORE 17:00</div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">PAYMENT METHOD</div>
+          <div class="option-list" id="payment-options">
+            <div class="option-item selected" data-label="Bank Transfer" data-type="traditional" onclick="selectPayment(this)">
+              <div class="option-radio"></div><span class="option-label">Bank Transfer</span><span class="option-badge">PREFERRED</span>
+            </div>
+            <div class="option-item" data-label="Cash on Delivery" data-type="traditional" onclick="selectPayment(this)">
+              <div class="option-radio"></div><span class="option-label">Cash on Delivery</span>
+            </div>
+            <div class="option-item" data-label="PayPal Friends and Family" data-type="traditional" onclick="selectPayment(this)">
+              <div class="option-radio"></div><span class="option-label">PayPal F&amp;F</span>
+            </div>
+            <div class="option-item" data-label="Bitcoin (BTC)" data-type="crypto" data-currency="BTC" onclick="selectPayment(this)">
+              <div class="option-radio"></div><span class="option-label">Bitcoin (BTC)</span><span class="crypto-badge">CRYPTO</span>
+            </div>
+            <div class="option-item" data-label="Ethereum (ETH)" data-type="crypto" data-currency="ETH" onclick="selectPayment(this)">
+              <div class="option-radio"></div><span class="option-label">Ethereum (ETH)</span><span class="crypto-badge">CRYPTO</span>
+            </div>
+            <div class="option-item" data-label="USDT (TRC20)" data-type="crypto" data-currency="USDT" onclick="selectPayment(this)">
+              <div class="option-radio"></div><span class="option-label">USDT (TRC20)</span><span class="crypto-badge">STABLE</span>
+            </div>
+            <div class="option-item" data-label="USDC (ERC20)" data-type="crypto" data-currency="USDC" onclick="selectPayment(this)">
+              <div class="option-radio"></div><span class="option-label">USDC (ERC20)</span><span class="crypto-badge">STABLE</span>
+            </div>
+          </div>
+          <button class="submit-btn" id="submit-btn" onclick="placeOrder()">SEND ORDER VIA WHATSAPP</button>
+          <button class="crypto-btn" id="crypto-btn" onclick="initiateCryptoPayment()" style="display:none">PAY WITH CRYPTO</button>
+          <div class="error-msg" id="error-msg"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Crypto Payment Modal -->
+  <div class="crypto-modal-overlay" id="crypto-modal">
+    <div class="crypto-modal">
+      <div class="crypto-modal-title">CRYPTO PAYMENT</div>
+      <div class="crypto-amount" id="crypto-amount">0.00000000 BTC</div>
+      <div class="crypto-network" id="crypto-network">Network: Bitcoin</div>
+      <div class="crypto-qr-container" id="crypto-qr"></div>
+      <div class="crypto-address-box">
+        <div class="crypto-address-label">SEND EXACT AMOUNT TO:</div>
+        <div class="crypto-address" id="crypto-address">...</div>
+        <button class="crypto-copy-btn" onclick="copyAddress()">COPY</button>
+      </div>
+      <div class="crypto-status pending" id="crypto-status">WAITING FOR PAYMENT</div>
+      <div class="crypto-timer" id="crypto-timer">Payment window: 30:00</div>
+      <button class="crypto-close" onclick="closeCryptoModal()">CANCEL PAYMENT</button>
+    </div>
+  </div>
+
+  <!-- WhatsApp Forward Modal -->
+  <div class="whatsapp-modal-overlay" id="whatsapp-modal">
+    <div class="whatsapp-modal">
+      <div class="whatsapp-modal-title">PAYMENT CONFIRMED</div>
+      <div class="order-ref" id="order-ref">ORDER: #TONY-XXXXXX</div>
+      <div class="whatsapp-modal-text">
+        Your crypto payment has been verified and confirmed.<br>
+        Click below to forward your order details to WhatsApp for processing.
+      </div>
+      <a class="whatsapp-btn" id="whatsapp-link" href="#" target="_blank">FORWARD TO WHATSAPP</a>
+    </div>
+  </div>
+
+  <script>
+    let cart = JSON.parse(localStorage.getItem('TONYY SHOP_cart') || '[]');
+    let selectedDeliveryCost = 6;
+    let selectedDeliveryLabel = 'Delivery in Person';
+    let selectedPaymentLabel = 'Bank Transfer';
+    let selectedPaymentType = 'traditional';
+    let selectedCrypto = null;
+    let currentOrderId = null;
+    let cryptoCheckInterval = null;
+    let cryptoTimerInterval = null;
+    let cryptoTimeLeft = 1800;
+    let qrCode = null;
+    let currentCryptoData = null;
+
+    function init() {
+      if (!cart.length) {
+        document.getElementById('checkout-grid').style.display = 'none';
+        document.getElementById('empty-state').style.display = 'block';
+        return;
+      }
+      const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+      document.getElementById('order-items').innerHTML = cart.map(i => `
+        <div class="order-row">
+          <div><div class="order-item-name">${i.name}</div><div class="order-item-qty">x${i.qty}</div></div>
+          <div class="order-item-price">£${(i.price * i.qty).toFixed(2)}</div>
+        </div>
+      `).join('');
+      updateTotals(subtotal);
+    }
+
+    function updateTotals(subtotal) {
+      if (subtotal === undefined) subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+      document.getElementById('subtotal').textContent = '£' + subtotal.toFixed(2);
+      document.getElementById('delivery-cost').textContent = '£' + selectedDeliveryCost.toFixed(2);
+      document.getElementById('grand-total').textContent = '£' + (subtotal + selectedDeliveryCost).toFixed(2);
+    }
+
+    function selectDelivery(el) {
+      document.querySelectorAll('#delivery-options .option-item').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedDeliveryCost = parseInt(el.dataset.cost);
+      selectedDeliveryLabel = el.dataset.label;
+      updateTotals();
+    }
+
+    function selectPayment(el) {
+      document.querySelectorAll('#payment-options .option-item').forEach(o => {
+        o.classList.remove('selected');
+        o.classList.remove('crypto-selected');
+      });
+      selectedPaymentType = el.dataset.type;
+      selectedPaymentLabel = el.dataset.label;
+      selectedCrypto = el.dataset.currency || null;
+
+      if (selectedPaymentType === 'crypto') {
+        el.classList.add('crypto-selected');
+        document.getElementById('submit-btn').style.display = 'none';
+        document.getElementById('crypto-btn').style.display = 'block';
+      } else {
+        el.classList.add('selected');
+        document.getElementById('submit-btn').style.display = 'block';
+        document.getElementById('crypto-btn').style.display = 'none';
+      }
+    }
+
+    function validateFields() {
+      const name = document.getElementById('field-name').value.trim();
+      const phone = document.getElementById('field-phone').value.trim();
+      const address = document.getElementById('field-address').value.trim();
+      const errEl = document.getElementById('error-msg');
+      errEl.classList.remove('show');
+      if (!name || !phone || !address) {
+        errEl.textContent = 'ALL FIELDS ARE REQUIRED';
+        errEl.classList.add('show');
+        return null;
+      }
+      return { name, phone, address };
+    }
+
+    async function placeOrder() {
+      const details = validateFields();
+      if (!details) return;
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      btn.textContent = 'PREPARING ORDER...';
+      try {
+        const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+        const total = subtotal + selectedDeliveryCost;
+        const orderData = {
+          name: details.name,
+          phone: details.phone,
+          address: details.address,
+          items: cart,
+          delivery: selectedDeliveryLabel + ' (£' + selectedDeliveryCost + ')',
+          payment: selectedPaymentLabel,
+          subtotal: subtotal,
+          total: total,
+          timestamp: new Date().toISOString()
+        };
+        const res = await fetch('/api/order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(orderData)
+        });
+        if (res.status === 401) { window.location.href = '/'; return; }
+        const data = await res.json();
+        if (data.success) {
+          localStorage.removeItem('TONYY SHOP_cart');
+          window.location.href = data.whatsappUrl;
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (e) {
+        const errEl = document.getElementById('error-msg');
+        errEl.textContent = (e.message || 'CONNECTION ERROR').toUpperCase();
+        errEl.classList.add('show');
+        btn.disabled = false;
+        btn.textContent = 'SEND ORDER VIA WHATSAPP';
+      }
+    }
+
+    function generateQRCode(address, amount, currency) {
+      const qrContainer = document.getElementById('crypto-qr');
+      qrContainer.innerHTML = '';
+      let qrData = '';
+      if (currency === 'BTC') {
+        qrData = `bitcoin:${address}?amount=${amount}`;
+      } else if (currency === 'ETH') {
+        qrData = `ethereum:${address}?value=${amount}`;
+      } else if (currency === 'USDT' || currency === 'USDC') {
+        qrData = `${currency.toLowerCase()}:${address}?amount=${amount}`;
+      } else {
+        qrData = address;
+      }
+      qrCode = new QRCode(qrContainer, {
+        text: qrData,
+        width: 160,
+        height: 160,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }
+
+    async function initiateCryptoPayment() {
+      const details = validateFields();
+      if (!details || !selectedCrypto) return;
+      const btn = document.getElementById('crypto-btn');
+      btn.disabled = true;
+      btn.textContent = 'INITIALIZING...';
+      try {
+        const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+        const total = subtotal + selectedDeliveryCost;
+        currentOrderId = 'TONY-' + Date.now().toString(36).toUpperCase();
+        const res = await fetch('/api/crypto-init', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId: currentOrderId,
+            currency: selectedCrypto,
+            fiatAmount: total,
+            name: details.name,
+            phone: details.phone,
+            address: details.address,
+            items: cart,
+            delivery: selectedDeliveryLabel + ' (£' + selectedDeliveryCost + ')',
+            payment: selectedPaymentLabel
+          })
+        });
+        if (!res.ok) throw new Error('Failed to initialize payment');
+        currentCryptoData = await res.json();
+        document.getElementById('crypto-amount').textContent = currentCryptoData.cryptoAmount + ' ' + selectedCrypto;
+        document.getElementById('crypto-network').textContent = 'Network: ' + currentCryptoData.network;
+        document.getElementById('crypto-address').textContent = currentCryptoData.address;
+        document.getElementById('crypto-status').textContent = 'WAITING FOR PAYMENT';
+        document.getElementById('crypto-status').className = 'crypto-status pending';
+        generateQRCode(currentCryptoData.address, currentCryptoData.cryptoAmount, selectedCrypto);
+        document.getElementById('crypto-modal').classList.add('show');
+        cryptoTimeLeft = 1800;
+        updateCryptoTimer();
+        cryptoTimerInterval = setInterval(updateCryptoTimer, 1000);
+        startCryptoVerification(total);
+      } catch (e) {
+        const errEl = document.getElementById('error-msg');
+        errEl.textContent = 'CRYPTO PAYMENT UNAVAILABLE. TRY ANOTHER METHOD.';
+        errEl.classList.add('show');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'PAY WITH CRYPTO';
+      }
+    }
+
+    function updateCryptoTimer() {
+      const mins = Math.floor(cryptoTimeLeft / 60);
+      const secs = cryptoTimeLeft % 60;
+      document.getElementById('crypto-timer').textContent = 
+        'Payment window: ' + mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
+      if (cryptoTimeLeft <= 0) {
+        clearInterval(cryptoTimerInterval);
+        document.getElementById('crypto-status').textContent = 'PAYMENT WINDOW EXPIRED';
+        document.getElementById('crypto-status').className = 'crypto-status failed';
+      }
+      cryptoTimeLeft--;
+    }
+
+    function copyAddress() {
+      const addr = document.getElementById('crypto-address').textContent;
+      navigator.clipboard.writeText(addr).then(() => {
+        const btn = document.querySelector('.crypto-copy-btn');
+        btn.textContent = 'COPIED!';
+        setTimeout(() => btn.textContent = 'COPY', 2000);
+      });
+    }
+
+    function closeCryptoModal() {
+      document.getElementById('crypto-modal').classList.remove('show');
+      clearInterval(cryptoCheckInterval);
+      clearInterval(cryptoTimerInterval);
+      document.getElementById('crypto-qr').innerHTML = '';
+      currentCryptoData = null;
+    }
+
+    async function startCryptoVerification(total) {
+      cryptoCheckInterval = setInterval(async () => {
+        try {
+          const res = await fetch('/api/crypto-status?orderId=' + currentOrderId);
+          const data = await res.json();
+          if (data.status === 'confirmed') {
+            clearInterval(cryptoCheckInterval);
+            clearInterval(cryptoTimerInterval);
+            document.getElementById('crypto-status').textContent = 'PAYMENT CONFIRMED';
+            document.getElementById('crypto-status').className = 'crypto-status confirmed';
+            setTimeout(() => {
+              closeCryptoModal();
+              showWhatsAppForward(total);
+            }, 1500);
+          } else if (data.status === 'failed' || cryptoTimeLeft <= 0) {
+            clearInterval(cryptoCheckInterval);
+            document.getElementById('crypto-status').textContent = 'PAYMENT FAILED OR EXPIRED';
+            document.getElementById('crypto-status').className = 'crypto-status failed';
+          }
+        } catch (e) {
+          console.error('Status check failed:', e);
+        }
+      }, 5000);
+    }
+
+    function showWhatsAppForward(total) {
+      localStorage.removeItem('TONYY SHOP_cart');
+      document.getElementById('order-ref').textContent = 'ORDER: #' + currentOrderId;
+      const itemsList = cart.map(i => `${i.name} x${i.qty} (£${(i.price * i.qty).toFixed(2)})`).join('%0A');
+      const message = `*NEW ORDER - ${currentOrderId}*%0A%0A` +
+        `*Customer:* ${document.getElementById('field-name').value.trim()}%0A` +
+        `*Phone:* ${document.getElementById('field-phone').value.trim()}%0A` +
+        `*Address:* ${document.getElementById('field-address').value.trim()}%0A%0A` +
+        `*Items:*%0A${itemsList}%0A%0A` +
+        `*Delivery:* ${selectedDeliveryLabel}%0A` +
+        `*Payment:* ${selectedPaymentLabel} (${selectedCrypto})%0A` +
+        `*Total:* £${total.toFixed(2)}%0A` +
+        `*Status:* PAID [OK]`;
+      const whatsappUrl = 'https://wa.me/?text=' + message;
+      document.getElementById('whatsapp-link').href = whatsappUrl;
+      document.getElementById('whatsapp-modal').classList.add('show');
+    }
+
+    init();
+  </script>
+</body>
+</html>

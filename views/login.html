@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TONYSHOP — ACCESS REQUIRED</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #050810;
+      --surface: #0d1117;
+      --border: #1e2d40;
+      --accent: #f7c948;
+      --accent2: #e63946;
+      --text: #c9d8e8;
+      --muted: #4a6080;
+      --glow: rgba(247, 201, 72, 0.15);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      font-family: 'Share Tech Mono', monospace;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+    #matrix-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      opacity: 0.25;
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+      pointer-events: none;
+      z-index: 100;
+    }
+    .login-wrapper {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 480px;
+      padding: 20px;
+    }
+    .login-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: 2px solid var(--accent);
+      padding: 48px 40px;
+      position: relative;
+      animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      box-shadow: 0 0 60px rgba(247, 201, 72, 0.08), 0 0 120px rgba(247, 201, 72, 0.04), inset 0 0 60px rgba(247, 201, 72, 0.02);
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .login-box::before, .login-box::after {
+      content: '';
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-color: var(--accent);
+      border-style: solid;
+    }
+    .login-box::before { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+    .login-box::after { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
+    .brand { text-align: center; margin-bottom: 36px; }
+    .brand-name {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 6px;
+      color: var(--accent);
+      text-shadow: 0 0 20px rgba(247, 201, 72, 0.5);
+    }
+    .brand-sub { font-size: 10px; letter-spacing: 4px; color: var(--muted); margin-top: 6px; text-transform: uppercase; }
+    .section-title { font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: 700; color: #fff; letter-spacing: 2px; margin-bottom: 6px; }
+    .section-sub { font-size: 11px; color: var(--muted); letter-spacing: 2px; margin-bottom: 32px; }
+    .field-label { font-size: 10px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; display: block; }
+    .code-input {
+      width: 100%;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 16px;
+      letter-spacing: 4px;
+      padding: 14px 16px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      caret-color: var(--accent);
+    }
+    .code-input::placeholder { color: var(--muted); letter-spacing: 2px; font-size: 13px; }
+    .code-input:focus { border-color: var(--accent); box-shadow: 0 0 20px var(--glow); }
+    .age-check { display: flex; align-items: center; gap: 12px; margin: 20px 0 28px; cursor: pointer; }
+    .age-check input[type="checkbox"] {
+      appearance: none;
+      width: 18px; height: 18px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.4);
+      cursor: pointer;
+      position: relative;
+      flex-shrink: 0;
+      transition: border-color 0.2s;
+    }
+    .age-check input[type="checkbox"]:checked { border-color: var(--accent); background: var(--accent); }
+    .age-check input[type="checkbox"]:checked::after {
+      content: '✓';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      color: #000;
+      font-size: 14px;
+      font-weight: bold;
+      font-family: 'Share Tech Mono', monospace;
+    }
+    .age-check span { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+    .age-check span em { color: var(--text); font-style: normal; }
+    .submit-btn {
+      width: 100%;
+      background: linear-gradient(90deg, var(--accent), #f0a500);
+      border: none;
+      color: #000;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      padding: 16px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
+      text-transform: uppercase;
+    }
+    .submit-btn:hover { box-shadow: 0 0 30px rgba(247, 201, 72, 0.4); }
+    .submit-btn:active { transform: scale(0.99); }
+    .submit-btn.loading { opacity: 0.7; pointer-events: none; }
+    .error-msg {
+      background: rgba(230, 57, 70, 0.1);
+      border: 1px solid rgba(230, 57, 70, 0.3);
+      color: var(--accent2);
+      font-size: 11px;
+      letter-spacing: 1px;
+      padding: 10px 14px;
+      margin-top: 16px;
+      display: none;
+    }
+    .error-msg.show { display: block; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+    .hint-text { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-align: center; }
+
+    /* Scanline effect */
+    .scanlines {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        transparent 50%,
+        rgba(0, 0, 0, 0.1) 50%
+      );
+      background-size: 100% 4px;
+      pointer-events: none;
+      z-index: 99;
+      opacity: 0.3;
+    }
+
+    /* Glow effect on login box */
+    .login-box::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      background: linear-gradient(45deg, var(--accent), transparent, var(--accent));
+      z-index: -1;
+      opacity: 0.3;
+      filter: blur(20px);
+    }
+  </style>
+<base target="_blank">
+</head>
+<body>
+  <canvas id="matrix-canvas"></canvas>
+  <div class="scanlines"></div>
+  <div class="login-wrapper">
+    <div class="login-box">
+      <div class="brand">
+        <div class="brand-name">TONYSHOP</div>
+        <div class="brand-sub">Premium Marketplace</div>
+      </div>
+      <div class="section-title">ACCESS REQUIRED</div>
+      <div class="section-sub">AUTHENTICATION PORTAL</div>
+      <label class="field-label" for="access-code">ENTER ACCESS CODE</label>
+      <input type="password" id="access-code" class="code-input" placeholder="••••••••••••" autocomplete="off" spellcheck="false">
+      <label class="age-check">
+        <input type="checkbox" id="age-verify">
+        <span><em>I confirm I am 18+</em> and agree to the terms of service</span>
+      </label>
+      <button class="submit-btn" id="submit-btn" onclick="handleLogin()">INITIALIZE SESSION</button>
+      <div class="error-msg" id="error-msg"></div>
+      <hr class="divider">
+      <div class="hint-text">INVITE-ONLY MARKETPLACE • VERIFIED SELLERS ONLY</div>
+    </div>
+  </div>
+  <script>
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const katakana = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+    const latin = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const nums = '0123456789';
+    const chars = katakana + latin + nums;
+
+    const fontSize = 16;
+    const columns = Math.floor(canvas.width / fontSize);
+    const drops = Array(columns).fill(1);
+    const speeds = Array(columns).fill(0).map(() => Math.random() * 0.5 + 0.5);
+    const brightness = Array(columns).fill(0).map(() => Math.random());
+
+    function drawMatrix() {
+      ctx.fillStyle = 'rgba(5, 8, 16, 0.08)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.font = fontSize + 'px Share Tech Mono';
+
+      drops.forEach((y, i) => {
+        const char = chars[Math.floor(Math.random() * chars.length)];
+        const x = i * fontSize;
+        const posY = y * fontSize;
+
+        // Head of the drop - bright white/yellow
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = '#f7c948';
+        ctx.fillText(char, x, posY);
+
+        // Trail - fading yellow/green
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = `rgba(247, 201, 72, ${0.3 + brightness[i] * 0.5})`;
+        ctx.fillText(char, x, posY - fontSize);
+
+        // Dimmer trail
+        ctx.fillStyle = `rgba(74, 96, 128, ${0.2 + brightness[i] * 0.3})`;
+        ctx.fillText(char, x, posY - fontSize * 2);
+
+        if (posY > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+          brightness[i] = Math.random();
+        }
+        drops[i] += speeds[i];
+      });
+    }
+
+    setInterval(drawMatrix, 35);
+
+    document.getElementById('access-code').addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleLogin();
+    });
+
+    async function handleLogin() {
+      const code = document.getElementById('access-code').value.trim();
+      const ageVerify = document.getElementById('age-verify').checked;
+      const btn = document.getElementById('submit-btn');
+      const errEl = document.getElementById('error-msg');
+      errEl.classList.remove('show');
+      if (!code) { showError('ACCESS CODE REQUIRED'); return; }
+      btn.classList.add('loading');
+      btn.textContent = 'AUTHENTICATING...';
+      try {
+        const res = await fetch('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, age_verify: ageVerify })
+        });
+        const data = await res.json();
+        if (data.success) {
+          btn.textContent = 'ACCESS GRANTED';
+          setTimeout(() => window.location.href = data.redirect, 600);
+        } else {
+          showError(data.message.toUpperCase());
+          btn.classList.remove('loading');
+          btn.textContent = 'INITIALIZE SESSION';
+        }
+      } catch {
+        showError('CONNECTION ERROR. RETRY.');
+        btn.classList.remove('loading');
+        btn.textContent = 'INITIALIZE SESSION';
+      }
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('error-msg');
+      el.textContent = msg;
+      el.classList.add('show');
+    }
+  </script>
+</body>
+</html>
