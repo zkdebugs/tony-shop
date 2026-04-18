@@ -2,6 +2,8 @@ const express = require('express');
 const session = require('express-session');
 const path = require('path');
 const crypto = require('crypto');
+const axios = require('axios');
+require('dotenv').config();
 
 const app = express();
 const PORT = 3000;
@@ -37,14 +39,44 @@ function requireAuth(req, res, next) {
 }
 
 const products = [
-  { id: 1, name: 'Charizard VMAX', set: 'Darkness Ablaze', price: 89.99, rarity: 'Secret Rare', condition: 'NM', badge: 'HOT', img: 'https://images.pokemontcg.io/swsh3/189_hires.png' },
-  { id: 2, name: 'Pikachu V-UNION', set: 'Celebrations', price: 24.99, rarity: 'Ultra Rare', condition: 'NM', badge: 'NEW', img: 'https://images.pokemontcg.io/cel25/1_hires.png' },
-  { id: 3, name: 'Mewtwo EX (Full Art)', set: 'Next Destinies', price: 149.99, rarity: 'Full Art', condition: 'LP', badge: 'RARE', img: 'https://images.pokemontcg.io/bw4/98_hires.png' },
-  { id: 4, name: 'Rayquaza VMAX', set: 'Evolving Skies', price: 74.99, rarity: 'Secret Rare', condition: 'NM', badge: 'HOT', img: 'https://images.pokemontcg.io/swsh7/218_hires.png' },
-  { id: 5, name: 'Umbreon VMAX (Alt Art)', set: 'Evolving Skies', price: 199.99, rarity: 'Alt Art', condition: 'NM', badge: 'LIMITED', img: 'https://images.pokemontcg.io/swsh7/215_hires.png' },
-  { id: 6, name: 'Blastoise & Piplup GX', set: 'Cosmic Eclipse', price: 39.99, rarity: 'Tag Team', condition: 'NM', badge: null, img: 'https://images.pokemontcg.io/sm12/38_hires.png' },
-  { id: 7, name: 'Lugia V (Alt Art)', set: 'Silver Tempest', price: 129.99, rarity: 'Alt Art', condition: 'NM', badge: 'LIMITED', img: 'https://images.pokemontcg.io/swsh11/186_hires.png' },
-  { id: 8, name: 'Booster Bundle (x10)', set: 'Mixed Sets', price: 49.99, rarity: 'Bundle', condition: 'Sealed', badge: 'DEAL', img: 'https://images.pokemontcg.io/swsh7/220_hires.png' },
+  // INJECTABLES
+  { id: 1, name: 'Test E 300mg', set: 'Premium Oil', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'HOT', img: '/injectable_vial_premium.png' },
+  { id: 2, name: 'Test C 250mg', set: 'Premium Oil', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: null, img: '/injectable_vial_premium.png' },
+  { id: 3, name: 'Test P 120mg', set: 'Premium Oil', price: 25.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: null, img: '/injectable_vial_premium.png' },
+  { id: 4, name: 'Sustanon 300mg', set: 'Multi-Ester', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'HOT', img: '/injectable_vial_premium.png' },
+  { id: 5, name: 'Test 400mg', set: 'Super Bulk', price: 35.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'RARE', img: '/injectable_vial_premium.png' },
+  { id: 6, name: 'NPP 150mg', set: 'Quick Deca', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: null, img: '/injectable_vial_premium.png' },
+  { id: 7, name: 'Deca 330mg', set: 'Joint Support', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: null, img: '/injectable_vial_premium.png' },
+  { id: 8, name: 'EQ 350mg', set: 'Endurance', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: null, img: '/injectable_vial_premium.png' },
+  { id: 9, name: 'Mast P 150mg', set: 'Cutting', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: null, img: '/injectable_vial_premium.png' },
+  { id: 10, name: 'Mast E 250mg', set: 'Cutting', price: 35.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'LIMITED', img: '/injectable_vial_premium.png' },
+  { id: 11, name: 'Tren A 120mg', set: 'Hardcore', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'HOT', img: '/injectable_vial_premium.png' },
+  { id: 12, name: 'Tren E 250mg', set: 'Hardcore', price: 35.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'LIMITED', img: '/injectable_vial_premium.png' },
+  { id: 13, name: 'Primobolan 150mg', set: 'Gentle Lean', price: 55.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'RARE', img: '/injectable_vial_premium.png' },
+  
+  // ORALS
+  { id: 14, name: 'Dbol 20mg', set: 'Crown Pharma', price: 25.00, rarity: 'ORALS', condition: '50 Tabs', badge: 'HOT', img: '/oral_steroid_pack_premium.png' },
+  { id: 15, name: 'Dbol 50mg', set: 'Crown Pharma', price: 30.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
+  { id: 16, name: 'Oxy 50mg', set: 'Crown Pharma', price: 35.00, rarity: 'ORALS', condition: '50 Tabs', badge: 'HOT', img: '/oral_steroid_pack_premium.png' },
+  { id: 17, name: 'Anavar 20mg', set: 'Crown Pharma', price: 36.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
+  { id: 18, name: 'Anavar 50mg', set: 'Crown Pharma', price: 45.00, rarity: 'ORALS', condition: '50 Tabs', badge: 'LIMITED', img: '/oral_steroid_pack_premium.png' },
+  { id: 19, name: 'Winstrol 20mg', set: 'Crown Pharma', price: 25.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
+  { id: 20, name: 'Winstrol 50mg', set: 'Crown Pharma', price: 30.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
+  { id: 21, name: 'Turinabol 20mg', set: 'Crown Pharma', price: 30.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
+  { id: 22, name: 'Proviron 20mg', set: 'Crown Pharma', price: 25.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
+  { id: 23, name: 'Telmisartan 40mg', set: 'Crown Pharma', price: 25.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
+  { id: 24, name: 'Yohimbine 5mg', set: 'Crown Pharma', price: 25.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
+  { id: 25, name: 'Superdrol 20mg', set: 'Crown Pharma', price: 25.00, rarity: 'ORALS', condition: '50 Tabs', badge: 'RARE', img: '/oral_steroid_pack_premium.png' },
+  { id: 26, name: 'Melatonin 5mg', set: 'Crown Pharma', price: 20.00, rarity: 'ORALS', condition: '100 Tabs', badge: 'DEAL', img: '/oral_steroid_pack_premium.png' },
+
+  // PEPTIDES
+  { id: 27, name: 'Bpc157 10mg', set: 'Healing', price: 25.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: null, img: '/peptide_vial_high_tech.png' },
+  { id: 28, name: 'GHK-CU 100mg', set: 'Healing', price: 45.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: null, img: '/peptide_vial_high_tech.png' },
+  { id: 29, name: 'Kisspeptin 10mg', set: 'Hormone', price: 40.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: null, img: '/peptide_vial_high_tech.png' },
+  { id: 30, name: 'MT2 10mg', set: 'Tanning', price: 45.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: 'HOT', img: '/peptide_vial_high_tech.png' },
+  { id: 31, name: 'Glow 50mg', set: 'Advanced', price: 70.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: 'RARE', img: '/peptide_vial_high_tech.png' },
+  { id: 32, name: 'Reta Pens 20mg', set: 'Fat Loss', price: 120.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: 'LIMITED', img: '/peptide_vial_high_tech.png' },
+  { id: 33, name: 'Reta 30mg Vials', set: 'Fat Loss', price: 150.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: 'LIMITED', img: '/peptide_vial_high_tech.png' },
 ];
 
 app.get('/', (req, res) => {
@@ -107,6 +139,91 @@ app.post('/api/order', requireAuth, (req, res) => {
   res.json({ success: true, whatsappUrl });
 });
 
+// HELPER: Fetch Live Crypto Rates
+async function getCryptoRates() {
+  try {
+    const response = await axios.get('https://api.coingecko.com/api/v3/simple/price', {
+      params: {
+        ids: 'bitcoin,ethereum,tether,usd-coin',
+        vs_currencies: 'gbp'
+      }
+    });
+    return {
+      BTC: 1 / response.data.bitcoin.gbp,
+      ETH: 1 / response.data.ethereum.gbp,
+      USDT: 1 / response.data.tether.gbp,
+      USDC: 1 / response.data['usd-coin'].gbp
+    };
+  } catch (err) {
+    console.error('Error fetching rates:', err.message);
+    return { BTC: 0.000015, ETH: 0.00025, USDT: 1.25, USDC: 1.25 }; // Fallback
+  }
+}
+
+// BLOCKCHAIN MONITORING ENGINE
+async function checkBlockchainTransactions() {
+  if (!app.locals.orders) return;
+  const now = new Date();
+  
+  for (const orderId in app.locals.orders) {
+    const order = app.locals.orders[orderId];
+    if (order.status !== 'pending' && order.status !== 'detecting') continue;
+    if (now > order.expiresAt) { order.status = 'expired'; continue; }
+
+    try {
+      let detectedTx = null;
+      const amountToFind = parseFloat(order.cryptoAmount);
+      
+      if (order.cryptoCurrency === 'BTC') {
+        const res = await axios.get(`https://api.blockcypher.com/v1/btc/main/addrs/${order.cryptoAddress}/full?limit=10`);
+        detectedTx = res.data.txs?.find(tx => 
+          tx.outputs.some(out => Math.abs((out.value / 100000000) - amountToFind) < 0.00000001)
+        );
+        if (detectedTx && detectedTx.confirmations >= 3) order.status = 'confirmed';
+      } 
+      else if (order.cryptoCurrency === 'ETH') {
+        const apiKey = process.env.ETHERSCAN_API_KEY;
+        const res = await axios.get(`https://api.etherscan.io/api?module=account&action=txlist&address=${order.cryptoAddress}&sort=desc&apikey=${apiKey}`);
+        detectedTx = res.data.result?.find(tx => 
+          Math.abs((parseFloat(tx.value) / 1e18) - amountToFind) < 0.00000001
+        );
+        if (detectedTx && parseInt(detectedTx.confirmations) >= 3) order.status = 'confirmed';
+      }
+      else if (order.cryptoCurrency === 'USDT') {
+        const res = await axios.get(`https://api.trongrid.io/v1/accounts/${order.cryptoAddress}/transactions/trc20?limit=20`, {
+           headers: { 'TRON-PRO-API-KEY': process.env.TRONGRID_API_KEY || '' }
+        });
+        detectedTx = res.data.data?.find(tx => 
+          tx.token_info.symbol === 'USDT' && 
+          Math.abs((parseInt(tx.value) / 1e6) - amountToFind) < 0.01
+        );
+        // TronGrid doesn't return confirmations in this endpoint, usually 1 confirmation is near-instant
+        // For 3 confirmations, we can check the block height or just assume confirmed if seen (TRON is very fast)
+        if (detectedTx) order.status = 'confirmed';
+      }
+      else if (order.cryptoCurrency === 'USDC') {
+        // USDC on Ethereum check
+        const apiKey = process.env.ETHERSCAN_API_KEY;
+        const res = await axios.get(`https://api.etherscan.io/api?module=account&action=tokentx&address=${order.cryptoAddress}&sort=desc&apikey=${apiKey}`);
+        detectedTx = res.data.result?.find(tx => 
+          tx.tokenSymbol === 'USDC' && 
+          Math.abs((parseFloat(tx.value) / 1e6) - amountToFind) < 0.01
+        );
+        if (detectedTx && parseInt(detectedTx.confirmations) >= 3) order.status = 'confirmed';
+      }
+
+      if (detectedTx && order.status !== 'confirmed') {
+        order.status = 'detecting'; // Payment seen, waiting for confirmations
+      }
+    } catch (err) {
+      console.error(`Error checking blockchain for order ${orderId}:`, err.message);
+    }
+  }
+}
+
+// Run monitoring every 45 seconds
+setInterval(checkBlockchainTransactions, 45000);
+
 // CRYPTO PAYMENT ENDPOINTS
 app.post('/api/crypto-init', requireAuth, async (req, res) => {
   const { orderId, currency, fiatAmount, name, phone, address, items, delivery, payment } = req.body;
@@ -122,12 +239,13 @@ app.post('/api/crypto-init', requireAuth, async (req, res) => {
     USDC: { address: process.env.USDC_WALLET || 'YOUR_USDC_ADDRESS', network: 'Ethereum (ERC20)', decimals: 6 }
   };
 
-  const CRYPTO_RATES = { BTC: 0.000015, ETH: 0.00025, USDT: 1.25, USDC: 1.25 };
-
+  const rates = await getCryptoRates();
   const config = CRYPTO_CONFIG[currency];
   if (!config) return res.status(400).json({ error: 'Unsupported currency' });
 
-  const cryptoAmount = (fiatAmount * CRYPTO_RATES[currency]).toFixed(config.decimals);
+  // Add unique "dust" to identify order (0.00000001 - 0.00000999)
+  const dust = (Math.floor(Math.random() * 999) + 1) / Math.pow(10, config.decimals);
+  const cryptoAmount = ((fiatAmount * rates[currency]) + dust).toFixed(config.decimals);
 
   // Store order in memory (use database in production)
   if (!app.locals.orders) app.locals.orders = {};

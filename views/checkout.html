@@ -138,7 +138,10 @@
       color: var(--crypto); margin-bottom: 16px;
     }
     .crypto-status.pending::before { content: '[WAITING] '; }
-    .crypto-status.confirmed::before { content: '[OK] '; }
+    .crypto-status.detecting::before { content: '[DETECTED] '; }
+    .crypto-status.detecting { background: rgba(247, 201, 72, 0.1); border-color: var(--accent); color: var(--accent); }
+    .crypto-status.confirmed::before { content: '[CONFIRMED] '; }
+    .crypto-status.confirmed { background: rgba(74, 222, 128, 0.1); border-color: var(--green); color: var(--green); }
     .crypto-status.failed::before { content: '[X] '; }
     .crypto-close {
       background: none; border: 1px solid var(--border); color: var(--muted);
@@ -544,12 +547,15 @@
           if (data.status === 'confirmed') {
             clearInterval(cryptoCheckInterval);
             clearInterval(cryptoTimerInterval);
-            document.getElementById('crypto-status').textContent = 'PAYMENT CONFIRMED';
+            document.getElementById('crypto-status').textContent = 'PAYMENT CONFIRMED (3/3)';
             document.getElementById('crypto-status').className = 'crypto-status confirmed';
             setTimeout(() => {
               closeCryptoModal();
               showWhatsAppForward(total);
             }, 1500);
+          } else if (data.status === 'detecting') {
+            document.getElementById('crypto-status').textContent = 'TRANSACTION DETECTED - WAITING FOR CONFIRMATIONS';
+            document.getElementById('crypto-status').className = 'crypto-status detecting';
           } else if (data.status === 'failed' || cryptoTimeLeft <= 0) {
             clearInterval(cryptoCheckInterval);
             document.getElementById('crypto-status').textContent = 'PAYMENT FAILED OR EXPIRED';
