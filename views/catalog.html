@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TONYSHOP — CATALOG</title>
+  <title>MONARCH LABS — CATALOG</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap"
     rel="stylesheet">
@@ -559,6 +559,171 @@
       letter-spacing: 2px;
       padding: 40px 0;
     }
+
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+      .topbar {
+        padding: 0 16px;
+        height: auto;
+        min-height: 60px;
+        flex-direction: column;
+        gap: 12px;
+        padding-bottom: 12px;
+      }
+
+      .topbar-left {
+        width: 100%;
+        justify-content: space-between;
+        padding-top: 12px;
+      }
+
+      .topbar-right {
+        width: 100%;
+        gap: 8px;
+        justify-content: space-between;
+      }
+
+      .search-bar {
+        width: 100%;
+        flex: 1;
+      }
+
+      .main-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .content {
+        padding: 20px 16px;
+      }
+
+      .cart-drawer {
+        width: 100%;
+      }
+
+      .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 12px;
+      }
+
+      .category-fab {
+        display: flex !important;
+      }
+    }
+
+    /* Floating Category Button */
+    .category-fab {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 56px;
+      height: 56px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: none; /* Only visible on mobile via media query */
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px rgba(247, 201, 72, 0.4);
+      z-index: 150;
+      cursor: pointer;
+      border: none;
+      color: #000;
+      transition: transform 0.2s;
+    }
+
+    .category-fab:active {
+      transform: scale(0.9);
+    }
+
+    /* Bottom Sheet */
+    .bottom-sheet-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      z-index: 300;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .bottom-sheet-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .bottom-sheet {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-radius: 24px 24px 0 0;
+      padding: 32px 24px 40px;
+      z-index: 301;
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .bottom-sheet.open {
+      transform: translateY(0);
+    }
+
+    .bottom-sheet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .bottom-sheet-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      letter-spacing: 3px;
+      color: var(--accent);
+    }
+
+    .bottom-sheet-close {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .category-list-mobile {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .category-item-mobile {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 16px 20px;
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+    }
+
+    .category-item-mobile.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(247, 201, 72, 0.05);
+    }
   </style>
   <base target="_blank">
   <base target="_blank">
@@ -572,7 +737,7 @@
     </svg> PREMIUM PHARMACEUTICALS — DISCREET DELIVERY — LAB TESTED</div>
   <header class="topbar">
     <div class="topbar-left">
-      <a href="/catalog" class="logo">TONYSHOP</a>
+      <a href="/catalog" class="logo">MONARCH LABS</a>
       <span class="nav-badge">PHARMACY</span>
     </div>
     <div class="topbar-right">
@@ -626,6 +791,24 @@
       <button class="checkout-btn" onclick="goCheckout()">PROCEED TO CHECKOUT</button>
     </div>
   </div>
+
+  <!-- Mobile Category FAB -->
+  <button class="category-fab" onclick="toggleBottomSheet()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="2" y1="14" x2="6" y2="14"></line><line x1="10" y1="8" x2="14" y2="8"></line><line x1="18" y1="16" x2="22" y2="16"></line></svg>
+  </button>
+
+  <!-- Mobile Bottom Sheet -->
+  <div class="bottom-sheet-overlay" id="sheet-overlay" onclick="toggleBottomSheet()"></div>
+  <div class="bottom-sheet" id="bottom-sheet">
+    <div class="bottom-sheet-header">
+      <span class="bottom-sheet-title">CATEGORIES</span>
+      <button class="bottom-sheet-close" onclick="toggleBottomSheet()">×</button>
+    </div>
+    <div class="category-list-mobile" id="mobile-categories">
+      <!-- Categories injected by JS -->
+    </div>
+  </div>
+
   <script>
     const allProducts = [
       // INJECTABLES
@@ -668,22 +851,37 @@
       { id: 33, name: 'Reta 30mg Vials', set: 'Fat Loss', price: 150.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: 'LIMITED', img: '/peptide_vial_high_tech.png' },
     ];
 
-    let cart = JSON.parse(localStorage.getItem('TONYY SHOP_cart') || '[]');
+    let cart = JSON.parse(localStorage.getItem('MONARCH_LABS_cart') || '[]');
     let activeCategory = 'ALL';
     const categories = ['ALL', 'INJECTABLES', 'ORALS', 'PEPTIDES'];
 
     const filterContainer = document.getElementById('filter-buttons');
+    const mobileFilterContainer = document.getElementById('mobile-categories');
     categories.forEach(cat => {
+      // Desktop Buttons
       const btn = document.createElement('button');
       btn.className = 'filter-btn' + (cat === 'ALL' ? ' active' : '');
       btn.textContent = cat;
       btn.onclick = () => setCategory(cat);
       filterContainer.appendChild(btn);
+
+      // Mobile Items
+      const mBtn = document.createElement('button');
+      mBtn.className = 'category-item-mobile' + (cat === 'ALL' ? ' active' : '');
+      mBtn.textContent = cat;
+      mBtn.onclick = () => { setCategory(cat); toggleBottomSheet(); };
+      mobileFilterContainer.appendChild(mBtn);
     });
+
+    function toggleBottomSheet() {
+      document.getElementById('sheet-overlay').classList.toggle('open');
+      document.getElementById('bottom-sheet').classList.toggle('open');
+    }
 
     function setCategory(cat) {
       activeCategory = cat;
       document.querySelectorAll('.filter-btn').forEach((b, i) => b.classList.toggle('active', categories[i] === cat));
+      document.querySelectorAll('.category-item-mobile').forEach((b, i) => b.classList.toggle('active', categories[i] === cat));
       renderProducts();
     }
 
@@ -739,7 +937,7 @@
       else { saveCart(); updateCartUI(); }
     }
 
-    function saveCart() { localStorage.setItem('TONYY SHOP_cart', JSON.stringify(cart)); }
+    function saveCart() { localStorage.setItem('MONARCH_LABS_cart', JSON.stringify(cart)); }
 
     function updateCartUI() {
       const total = cart.reduce((s, i) => s + i.price * i.qty, 0);

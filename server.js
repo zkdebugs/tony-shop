@@ -299,6 +299,6 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`\nTONYY SHOP running at http://localhost:${PORT}`);
+  console.log(`\nMONARCH LABS running at http://localhost:${PORT}`);
   console.log(`Access code: ${ACCESS_CODE}\n`);
 });
