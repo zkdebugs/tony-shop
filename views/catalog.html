@@ -623,7 +623,8 @@
       height: 56px;
       background: var(--accent);
       border-radius: 50%;
-      display: none; /* Only visible on mobile via media query */
+      display: none;
+      /* Only visible on mobile via media query */
       align-items: center;
       justify-content: center;
       box-shadow: 0 4px 20px rgba(247, 201, 72, 0.4);
@@ -794,7 +795,18 @@
 
   <!-- Mobile Category FAB -->
   <button class="category-fab" onclick="toggleBottomSheet()">
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="2" y1="14" x2="6" y2="14"></line><line x1="10" y1="8" x2="14" y2="8"></line><line x1="18" y1="16" x2="22" y2="16"></line></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="4" y1="21" x2="4" y2="14"></line>
+      <line x1="4" y1="10" x2="4" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="12"></line>
+      <line x1="12" y1="8" x2="12" y2="3"></line>
+      <line x1="20" y1="21" x2="20" y2="16"></line>
+      <line x1="20" y1="12" x2="20" y2="3"></line>
+      <line x1="2" y1="14" x2="6" y2="14"></line>
+      <line x1="10" y1="8" x2="14" y2="8"></line>
+      <line x1="18" y1="16" x2="22" y2="16"></line>
+    </svg>
   </button>
 
   <!-- Mobile Bottom Sheet -->
@@ -805,13 +817,12 @@
       <button class="bottom-sheet-close" onclick="toggleBottomSheet()">×</button>
     </div>
     <div class="category-list-mobile" id="mobile-categories">
-      <!-- Categories injected by JS -->
+
     </div>
   </div>
 
   <script>
     const allProducts = [
-      // INJECTABLES
       { id: 1, name: 'Test E 300mg', set: 'Premium Oil', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'HOT', img: '/injectable_vial_premium.png' },
       { id: 2, name: 'Test C 250mg', set: 'Premium Oil', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: null, img: '/injectable_vial_premium.png' },
       { id: 3, name: 'Test P 120mg', set: 'Premium Oil', price: 25.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: null, img: '/injectable_vial_premium.png' },
@@ -826,7 +837,6 @@
       { id: 12, name: 'Tren E 250mg', set: 'Hardcore', price: 35.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'LIMITED', img: '/injectable_vial_premium.png' },
       { id: 13, name: 'Primobolan 150mg', set: 'Gentle Lean', price: 55.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'RARE', img: '/injectable_vial_premium.png' },
 
-      // ORALS
       { id: 14, name: 'Dbol 20mg', set: 'Crown Pharma', price: 25.00, rarity: 'ORALS', condition: '50 Tabs', badge: 'HOT', img: '/oral_steroid_pack_premium.png' },
       { id: 15, name: 'Dbol 50mg', set: 'Crown Pharma', price: 30.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
       { id: 16, name: 'Oxy 50mg', set: 'Crown Pharma', price: 35.00, rarity: 'ORALS', condition: '50 Tabs', badge: 'HOT', img: '/oral_steroid_pack_premium.png' },
@@ -841,7 +851,6 @@
       { id: 25, name: 'Superdrol 20mg', set: 'Crown Pharma', price: 25.00, rarity: 'ORALS', condition: '50 Tabs', badge: 'RARE', img: '/oral_steroid_pack_premium.png' },
       { id: 26, name: 'Melatonin 5mg', set: 'Crown Pharma', price: 20.00, rarity: 'ORALS', condition: '100 Tabs', badge: 'DEAL', img: '/oral_steroid_pack_premium.png' },
 
-      // PEPTIDES
       { id: 27, name: 'Bpc157 10mg', set: 'Healing', price: 25.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: null, img: '/peptide_vial_high_tech.png' },
       { id: 28, name: 'GHK-CU 100mg', set: 'Healing', price: 45.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: null, img: '/peptide_vial_high_tech.png' },
       { id: 29, name: 'Kisspeptin 10mg', set: 'Hormone', price: 40.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: null, img: '/peptide_vial_high_tech.png' },
@@ -858,14 +867,12 @@
     const filterContainer = document.getElementById('filter-buttons');
     const mobileFilterContainer = document.getElementById('mobile-categories');
     categories.forEach(cat => {
-      // Desktop Buttons
       const btn = document.createElement('button');
       btn.className = 'filter-btn' + (cat === 'ALL' ? ' active' : '');
       btn.textContent = cat;
       btn.onclick = () => setCategory(cat);
       filterContainer.appendChild(btn);
 
-      // Mobile Items
       const mBtn = document.createElement('button');
       mBtn.className = 'category-item-mobile' + (cat === 'ALL' ? ' active' : '');
       mBtn.textContent = cat;

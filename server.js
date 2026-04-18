@@ -5,17 +5,13 @@ const crypto = require('crypto');
 const axios = require('axios');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
-
 const app = express();
 const PORT = 3000;
-
-const ACCESS_CODE = process.env.ACCESS_CODE || 'TREX_T0NY';
+const ACCESS_CODE = process.env.ACCESS_CODE;
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(64).toString('hex');
-
-// Rate limiting for login
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit each IP to 10 login requests per window
+  windowMs: 15 * 60 * 1000,
+  max: 10,
   message: { success: false, message: 'Too many login attempts. Please try again in 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -63,7 +59,7 @@ const products = [
   { id: 11, name: 'Tren A 120mg', set: 'Hardcore', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'HOT', img: '/injectable_vial_premium.png' },
   { id: 12, name: 'Tren E 250mg', set: 'Hardcore', price: 35.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'LIMITED', img: '/injectable_vial_premium.png' },
   { id: 13, name: 'Primobolan 150mg', set: 'Gentle Lean', price: 55.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'RARE', img: '/injectable_vial_premium.png' },
-  
+
   // ORALS
   { id: 14, name: 'Dbol 20mg', set: 'Crown Pharma', price: 25.00, rarity: 'ORALS', condition: '50 Tabs', badge: 'HOT', img: '/oral_steroid_pack_premium.png' },
   { id: 15, name: 'Dbol 50mg', set: 'Crown Pharma', price: 30.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
@@ -174,7 +170,7 @@ async function getCryptoRates() {
 async function checkBlockchainTransactions() {
   if (!app.locals.orders) return;
   const now = new Date();
-  
+
   for (const orderId in app.locals.orders) {
     const order = app.locals.orders[orderId];
     if (order.status !== 'pending' && order.status !== 'detecting') continue;
@@ -183,28 +179,28 @@ async function checkBlockchainTransactions() {
     try {
       let detectedTx = null;
       const amountToFind = parseFloat(order.cryptoAmount);
-      
+
       if (order.cryptoCurrency === 'BTC') {
         const res = await axios.get(`https://api.blockcypher.com/v1/btc/main/addrs/${order.cryptoAddress}/full?limit=10`);
-        detectedTx = res.data.txs?.find(tx => 
+        detectedTx = res.data.txs?.find(tx =>
           tx.outputs.some(out => Math.abs((out.value / 100000000) - amountToFind) < 0.00000001)
         );
         if (detectedTx && detectedTx.confirmations >= 3) order.status = 'confirmed';
-      } 
+      }
       else if (order.cryptoCurrency === 'ETH') {
         const apiKey = process.env.ETHERSCAN_API_KEY;
         const res = await axios.get(`https://api.etherscan.io/api?module=account&action=txlist&address=${order.cryptoAddress}&sort=desc&apikey=${apiKey}`);
-        detectedTx = res.data.result?.find(tx => 
+        detectedTx = res.data.result?.find(tx =>
           Math.abs((parseFloat(tx.value) / 1e18) - amountToFind) < 0.00000001
         );
         if (detectedTx && parseInt(detectedTx.confirmations) >= 3) order.status = 'confirmed';
       }
       else if (order.cryptoCurrency === 'USDT') {
         const res = await axios.get(`https://api.trongrid.io/v1/accounts/${order.cryptoAddress}/transactions/trc20?limit=20`, {
-           headers: { 'TRON-PRO-API-KEY': process.env.TRONGRID_API_KEY || '' }
+          headers: { 'TRON-PRO-API-KEY': process.env.TRONGRID_API_KEY || '' }
         });
-        detectedTx = res.data.data?.find(tx => 
-          tx.token_info.symbol === 'USDT' && 
+        detectedTx = res.data.data?.find(tx =>
+          tx.token_info.symbol === 'USDT' &&
           Math.abs((parseInt(tx.value) / 1e6) - amountToFind) < 0.01
         );
         // TronGrid doesn't return confirmations in this endpoint, usually 1 confirmation is near-instant
@@ -215,8 +211,8 @@ async function checkBlockchainTransactions() {
         // USDC on Ethereum check
         const apiKey = process.env.ETHERSCAN_API_KEY;
         const res = await axios.get(`https://api.etherscan.io/api?module=account&action=tokentx&address=${order.cryptoAddress}&sort=desc&apikey=${apiKey}`);
-        detectedTx = res.data.result?.find(tx => 
-          tx.tokenSymbol === 'USDC' && 
+        detectedTx = res.data.result?.find(tx =>
+          tx.tokenSymbol === 'USDC' &&
           Math.abs((parseFloat(tx.value) / 1e6) - amountToFind) < 0.01
         );
         if (detectedTx && parseInt(detectedTx.confirmations) >= 3) order.status = 'confirmed';

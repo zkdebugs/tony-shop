@@ -286,7 +286,7 @@
       text-align: center;
     }
 
-    /* Scanline effect */
+
     .scanlines {
       position: fixed;
       inset: 0;
@@ -299,7 +299,7 @@
       opacity: 0.3;
     }
 
-    /* Glow effect on login box */
+
     .login-box::before {
       content: '';
       position: absolute;
@@ -314,9 +314,11 @@
       .login-box {
         padding: 32px 24px;
       }
+
       .brand-name {
         font-size: 22px;
       }
+
       .section-title {
         font-size: 16px;
       }
@@ -382,18 +384,15 @@
         const x = i * fontSize;
         const posY = y * fontSize;
 
-        // Head of the drop - bright white/yellow
         ctx.fillStyle = '#ffffff';
         ctx.shadowBlur = 8;
         ctx.shadowColor = '#f7c948';
         ctx.fillText(char, x, posY);
 
-        // Trail - fading yellow/green
         ctx.shadowBlur = 0;
         ctx.fillStyle = `rgba(247, 201, 72, ${0.3 + brightness[i] * 0.5})`;
         ctx.fillText(char, x, posY - fontSize);
 
-        // Dimmer trail
         ctx.fillStyle = `rgba(74, 96, 128, ${0.2 + brightness[i] * 0.3})`;
         ctx.fillText(char, x, posY - fontSize * 2);
 
