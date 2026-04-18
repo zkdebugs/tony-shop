@@ -3,13 +3,23 @@ const session = require('express-session');
 const path = require('path');
 const crypto = require('crypto');
 const axios = require('axios');
+const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const app = express();
 const PORT = 3000;
 
-const ACCESS_CODE = 'TREX_T0NY';
-const SESSION_SECRET = crypto.randomBytes(64).toString('hex');
+const ACCESS_CODE = process.env.ACCESS_CODE || 'TREX_T0NY';
+const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(64).toString('hex');
+
+// Rate limiting for login
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // Limit each IP to 10 login requests per window
+  message: { success: false, message: 'Too many login attempts. Please try again in 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -84,7 +94,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'login.html'));
 });
 
-app.post('/auth/login', (req, res) => {
+app.post('/auth/login', loginLimiter, (req, res) => {
   const { code, age_verify } = req.body;
   if (!age_verify) return res.status(400).json({ success: false, message: 'Age verification required.' });
   const provided = Buffer.from(String(code));
