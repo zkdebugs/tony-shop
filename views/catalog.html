@@ -753,7 +753,8 @@
           <line x1="12" y1="17" x2="12" y2="21"></line>
         </svg> CART <span class="cart-count" id="cart-count">0</span>
       </button>
-      <button onclick="window.location.href='/admin'" class="logout-btn" style="border-color:var(--accent);color:var(--accent);">ADMIN</button>
+      <button onclick="window.location.href='/admin'" class="logout-btn"
+        style="border-color:var(--accent);color:var(--accent);">ADMIN</button>
       <form action="/auth/logout" method="POST" style="display:inline">
         <button type="submit" class="logout-btn">LOGOUT</button>
       </form>
@@ -823,43 +824,7 @@
   </div>
 
   <script>
-    const allProducts = [
-      { id: 1, name: 'Test E 300mg', set: 'Premium Oil', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'HOT', img: '/injectable_vial_premium.png' },
-      { id: 2, name: 'Test C 250mg', set: 'Premium Oil', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: null, img: '/injectable_vial_premium.png' },
-      { id: 3, name: 'Test P 120mg', set: 'Premium Oil', price: 25.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: null, img: '/injectable_vial_premium.png' },
-      { id: 4, name: 'Sustanon 300mg', set: 'Multi-Ester', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'HOT', img: '/injectable_vial_premium.png' },
-      { id: 5, name: 'Test 400mg', set: 'Super Bulk', price: 35.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'RARE', img: '/injectable_vial_premium.png' },
-      { id: 6, name: 'NPP 150mg', set: 'Quick Deca', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: null, img: '/injectable_vial_premium.png' },
-      { id: 7, name: 'Deca 330mg', set: 'Joint Support', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: null, img: '/injectable_vial_premium.png' },
-      { id: 8, name: 'EQ 350mg', set: 'Endurance', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: null, img: '/injectable_vial_premium.png' },
-      { id: 9, name: 'Mast P 150mg', set: 'Cutting', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: null, img: '/injectable_vial_premium.png' },
-      { id: 10, name: 'Mast E 250mg', set: 'Cutting', price: 35.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'LIMITED', img: '/injectable_vial_premium.png' },
-      { id: 11, name: 'Tren A 120mg', set: 'Hardcore', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'HOT', img: '/injectable_vial_premium.png' },
-      { id: 12, name: 'Tren E 250mg', set: 'Hardcore', price: 35.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'LIMITED', img: '/injectable_vial_premium.png' },
-      { id: 13, name: 'Primobolan 150mg', set: 'Gentle Lean', price: 55.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'RARE', img: '/injectable_vial_premium.png' },
-
-      { id: 14, name: 'Dbol 20mg', set: 'Crown Pharma', price: 25.00, rarity: 'ORALS', condition: '50 Tabs', badge: 'HOT', img: '/oral_steroid_pack_premium.png' },
-      { id: 15, name: 'Dbol 50mg', set: 'Crown Pharma', price: 30.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
-      { id: 16, name: 'Oxy 50mg', set: 'Crown Pharma', price: 35.00, rarity: 'ORALS', condition: '50 Tabs', badge: 'HOT', img: '/oral_steroid_pack_premium.png' },
-      { id: 17, name: 'Anavar 20mg', set: 'Crown Pharma', price: 36.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
-      { id: 18, name: 'Anavar 50mg', set: 'Crown Pharma', price: 45.00, rarity: 'ORALS', condition: '50 Tabs', badge: 'LIMITED', img: '/oral_steroid_pack_premium.png' },
-      { id: 19, name: 'Winstrol 20mg', set: 'Crown Pharma', price: 25.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
-      { id: 20, name: 'Winstrol 50mg', set: 'Crown Pharma', price: 30.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
-      { id: 21, name: 'Turinabol 20mg', set: 'Crown Pharma', price: 30.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
-      { id: 22, name: 'Proviron 20mg', set: 'Crown Pharma', price: 25.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
-      { id: 23, name: 'Telmisartan 40mg', set: 'Crown Pharma', price: 25.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
-      { id: 24, name: 'Yohimbine 5mg', set: 'Crown Pharma', price: 25.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
-      { id: 25, name: 'Superdrol 20mg', set: 'Crown Pharma', price: 25.00, rarity: 'ORALS', condition: '50 Tabs', badge: 'RARE', img: '/oral_steroid_pack_premium.png' },
-      { id: 26, name: 'Melatonin 5mg', set: 'Crown Pharma', price: 20.00, rarity: 'ORALS', condition: '100 Tabs', badge: 'DEAL', img: '/oral_steroid_pack_premium.png' },
-
-      { id: 27, name: 'Bpc157 10mg', set: 'Healing', price: 25.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: null, img: '/peptide_vial_high_tech.png' },
-      { id: 28, name: 'GHK-CU 100mg', set: 'Healing', price: 45.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: null, img: '/peptide_vial_high_tech.png' },
-      { id: 29, name: 'Kisspeptin 10mg', set: 'Hormone', price: 40.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: null, img: '/peptide_vial_high_tech.png' },
-      { id: 30, name: 'MT2 10mg', set: 'Tanning', price: 45.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: 'HOT', img: '/peptide_vial_high_tech.png' },
-      { id: 31, name: 'Glow 50mg', set: 'Advanced', price: 70.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: 'RARE', img: '/peptide_vial_high_tech.png' },
-      { id: 32, name: 'Reta Pens 20mg', set: 'Fat Loss', price: 120.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: 'LIMITED', img: '/peptide_vial_high_tech.png' },
-      { id: 33, name: 'Reta 30mg Vials', set: 'Fat Loss', price: 150.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: 'LIMITED', img: '/peptide_vial_high_tech.png' },
-    ];
+    let allProducts = [];
 
     let cart = JSON.parse(localStorage.getItem('MONARCH_LABS_cart') || '[]');
     let activeCategory = 'ALL';
@@ -977,8 +942,18 @@
 
     function goCheckout() { if (cart.length) window.location.href = '/checkout'; }
 
-    renderProducts();
-    updateCartUI();
+    async function init() {
+      try {
+        const res = await fetch('/api/products');
+        allProducts = await res.json();
+      } catch (err) {
+        console.error('Failed to fetch products', err);
+      }
+      renderProducts();
+      updateCartUI();
+    }
+
+    init();
   </script>
 </body>
 

@@ -178,7 +178,7 @@ app.post('/admin/logout', (req, res) => {
   if (req.session) {
     req.session.adminAuthenticated = false;
   }
-  res.redirect('/admin/login');
+  res.redirect('/');
 });
 
 app.get('/admin', requireAdminAuth, (req, res) => {
