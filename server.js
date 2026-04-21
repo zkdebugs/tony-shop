@@ -4,17 +4,61 @@ const path = require('path');
 const crypto = require('crypto');
 const axios = require('axios');
 const rateLimit = require('express-rate-limit');
+const fs = require('fs');
+const multer = require('multer');
 require('dotenv').config();
 const app = express();
 const PORT = 3000;
 const ACCESS_CODE = process.env.ACCESS_CODE;
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'password';
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(64).toString('hex');
+
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
   message: { success: false, message: 'Too many login attempts. Please try again in 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
+});
+
+const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5, // Strictly restrict Admin brute force
+  message: { success: false, message: 'Too many admin login attempts. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Configure Multer for secure image uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(__dirname, 'public', 'uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, 'img-' + uniqueSuffix + ext);
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|webp|gif/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    if (extname && mimetype) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Only images (jpeg, jpg, png, webp, gif) are allowed!'));
+    }
+  }
 });
 
 app.use(express.json());
@@ -44,46 +88,32 @@ function requireAuth(req, res, next) {
   return res.redirect('/');
 }
 
-const products = [
-  // INJECTABLES
-  { id: 1, name: 'Test E 300mg', set: 'Premium Oil', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'HOT', img: '/injectable_vial_premium.png' },
-  { id: 2, name: 'Test C 250mg', set: 'Premium Oil', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: null, img: '/injectable_vial_premium.png' },
-  { id: 3, name: 'Test P 120mg', set: 'Premium Oil', price: 25.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: null, img: '/injectable_vial_premium.png' },
-  { id: 4, name: 'Sustanon 300mg', set: 'Multi-Ester', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'HOT', img: '/injectable_vial_premium.png' },
-  { id: 5, name: 'Test 400mg', set: 'Super Bulk', price: 35.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'RARE', img: '/injectable_vial_premium.png' },
-  { id: 6, name: 'NPP 150mg', set: 'Quick Deca', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: null, img: '/injectable_vial_premium.png' },
-  { id: 7, name: 'Deca 330mg', set: 'Joint Support', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: null, img: '/injectable_vial_premium.png' },
-  { id: 8, name: 'EQ 350mg', set: 'Endurance', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: null, img: '/injectable_vial_premium.png' },
-  { id: 9, name: 'Mast P 150mg', set: 'Cutting', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: null, img: '/injectable_vial_premium.png' },
-  { id: 10, name: 'Mast E 250mg', set: 'Cutting', price: 35.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'LIMITED', img: '/injectable_vial_premium.png' },
-  { id: 11, name: 'Tren A 120mg', set: 'Hardcore', price: 30.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'HOT', img: '/injectable_vial_premium.png' },
-  { id: 12, name: 'Tren E 250mg', set: 'Hardcore', price: 35.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'LIMITED', img: '/injectable_vial_premium.png' },
-  { id: 13, name: 'Primobolan 150mg', set: 'Gentle Lean', price: 55.00, rarity: 'INJECTABLES', condition: 'Lab Tested', badge: 'RARE', img: '/injectable_vial_premium.png' },
+function requireAdminAuth(req, res, next) {
+  if (req.session && req.session.adminAuthenticated === true) {
+    return next();
+  }
+  return res.redirect('/admin/login');
+}
 
-  // ORALS
-  { id: 14, name: 'Dbol 20mg', set: 'Crown Pharma', price: 25.00, rarity: 'ORALS', condition: '50 Tabs', badge: 'HOT', img: '/oral_steroid_pack_premium.png' },
-  { id: 15, name: 'Dbol 50mg', set: 'Crown Pharma', price: 30.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
-  { id: 16, name: 'Oxy 50mg', set: 'Crown Pharma', price: 35.00, rarity: 'ORALS', condition: '50 Tabs', badge: 'HOT', img: '/oral_steroid_pack_premium.png' },
-  { id: 17, name: 'Anavar 20mg', set: 'Crown Pharma', price: 36.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
-  { id: 18, name: 'Anavar 50mg', set: 'Crown Pharma', price: 45.00, rarity: 'ORALS', condition: '50 Tabs', badge: 'LIMITED', img: '/oral_steroid_pack_premium.png' },
-  { id: 19, name: 'Winstrol 20mg', set: 'Crown Pharma', price: 25.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
-  { id: 20, name: 'Winstrol 50mg', set: 'Crown Pharma', price: 30.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
-  { id: 21, name: 'Turinabol 20mg', set: 'Crown Pharma', price: 30.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
-  { id: 22, name: 'Proviron 20mg', set: 'Crown Pharma', price: 25.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
-  { id: 23, name: 'Telmisartan 40mg', set: 'Crown Pharma', price: 25.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
-  { id: 24, name: 'Yohimbine 5mg', set: 'Crown Pharma', price: 25.00, rarity: 'ORALS', condition: '50 Tabs', badge: null, img: '/oral_steroid_pack_premium.png' },
-  { id: 25, name: 'Superdrol 20mg', set: 'Crown Pharma', price: 25.00, rarity: 'ORALS', condition: '50 Tabs', badge: 'RARE', img: '/oral_steroid_pack_premium.png' },
-  { id: 26, name: 'Melatonin 5mg', set: 'Crown Pharma', price: 20.00, rarity: 'ORALS', condition: '100 Tabs', badge: 'DEAL', img: '/oral_steroid_pack_premium.png' },
+function loadProducts() {
+  try {
+    const data = fs.readFileSync(path.join(__dirname, 'products.json'), 'utf8');
+    return JSON.parse(data);
+  } catch (err) {
+    console.error('Error loading products.json:', err);
+    return [];
+  }
+}
 
-  // PEPTIDES
-  { id: 27, name: 'Bpc157 10mg', set: 'Healing', price: 25.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: null, img: '/peptide_vial_high_tech.png' },
-  { id: 28, name: 'GHK-CU 100mg', set: 'Healing', price: 45.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: null, img: '/peptide_vial_high_tech.png' },
-  { id: 29, name: 'Kisspeptin 10mg', set: 'Hormone', price: 40.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: null, img: '/peptide_vial_high_tech.png' },
-  { id: 30, name: 'MT2 10mg', set: 'Tanning', price: 45.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: 'HOT', img: '/peptide_vial_high_tech.png' },
-  { id: 31, name: 'Glow 50mg', set: 'Advanced', price: 70.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: 'RARE', img: '/peptide_vial_high_tech.png' },
-  { id: 32, name: 'Reta Pens 20mg', set: 'Fat Loss', price: 120.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: 'LIMITED', img: '/peptide_vial_high_tech.png' },
-  { id: 33, name: 'Reta 30mg Vials', set: 'Fat Loss', price: 150.00, rarity: 'PEPTIDES', condition: 'Lab Tested', badge: 'LIMITED', img: '/peptide_vial_high_tech.png' },
-];
+function saveProducts(data) {
+  try {
+    fs.writeFileSync(path.join(__dirname, 'products.json'), JSON.stringify(data, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Error saving products.json:', err);
+  }
+}
+
+let products = loadProducts();
 
 app.get('/', (req, res) => {
   if (req.session && req.session.authenticated) return res.redirect('/catalog');
@@ -114,6 +144,119 @@ app.post('/auth/logout', (req, res) => {
   req.session.destroy(() => {
     res.clearCookie('connect.sid');
     res.redirect('/');
+  });
+});
+
+// ADMIN ROUTES
+
+app.get('/admin/login', (req, res) => {
+  if (req.session && req.session.adminAuthenticated) return res.redirect('/admin');
+  res.sendFile(path.join(__dirname, 'views', 'admin-login.html'));
+});
+
+app.post('/admin/auth', adminLimiter, (req, res) => {
+  const { username, password } = req.body;
+  
+  const userSafe = Buffer.from(username || '');
+  const expectedUser = Buffer.from(ADMIN_USERNAME);
+  const passSafe = Buffer.from(password || '');
+  const expectedPass = Buffer.from(ADMIN_PASSWORD);
+  
+  // Prevent length mismatch crash & use timing safe equal to prevent timing attacks
+  const userMatch = userSafe.length === expectedUser.length && crypto.timingSafeEqual(userSafe, expectedUser);
+  const passMatch = passSafe.length === expectedPass.length && crypto.timingSafeEqual(passSafe, expectedPass);
+  
+  if (userMatch && passMatch) {
+    req.session.adminAuthenticated = true;
+    return res.json({ success: true, redirect: '/admin' });
+  }
+  
+  return res.status(401).json({ success: false, message: 'Invalid admin credentials.' });
+});
+
+app.post('/admin/logout', (req, res) => {
+  if (req.session) {
+    req.session.adminAuthenticated = false;
+  }
+  res.redirect('/admin/login');
+});
+
+app.get('/admin', requireAdminAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'admin-dashboard.html'));
+});
+
+app.get('/api/admin/products', requireAdminAuth, (req, res) => {
+  res.json(products);
+});
+
+app.post('/api/admin/product', requireAdminAuth, (req, res) => {
+  const { name, set, price, rarity, condition, badge, img } = req.body;
+  if (!name || isNaN(price) || !rarity) {
+    return res.status(400).json({ success: false, message: 'Invalid product data.' });
+  }
+  
+  const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
+  const newProduct = {
+    id: newId,
+    name,
+    set: set || '',
+    price: parseFloat(price),
+    rarity,
+    condition: condition || '',
+    badge: badge === '' ? null : badge,
+    img: img || '/placeholder.png'
+  };
+  
+  products.push(newProduct);
+  saveProducts(products);
+  res.json({ success: true, product: newProduct });
+});
+
+app.put('/api/admin/product/:id', requireAdminAuth, (req, res) => {
+  const { id } = req.params;
+  const index = products.findIndex(p => p.id === parseInt(id));
+  if (index === -1) return res.status(404).json({ success: false, message: 'Product not found.' });
+  
+  const { name, set, price, rarity, condition, badge, img } = req.body;
+  
+  if (name) products[index].name = name;
+  if (set !== undefined) products[index].set = set;
+  if (price !== undefined && !isNaN(price)) products[index].price = parseFloat(price);
+  if (rarity) products[index].rarity = rarity;
+  if (condition !== undefined) products[index].condition = condition;
+  if (badge !== undefined) products[index].badge = badge === '' ? null : badge;
+  if (img) products[index].img = img;
+  
+  saveProducts(products);
+  res.json({ success: true, product: products[index] });
+});
+
+app.delete('/api/admin/product/:id', requireAdminAuth, (req, res) => {
+  const { id } = req.params;
+  const index = products.findIndex(p => p.id === parseInt(id));
+  if (index === -1) return res.status(404).json({ success: false, message: 'Product not found.' });
+  
+  products.splice(index, 1);
+  saveProducts(products);
+  res.json({ success: true });
+});
+
+// Secure image upload endpoint for Admin
+app.post('/api/admin/upload-image', requireAdminAuth, (req, res) => {
+  upload.single('image')(req, res, function(err) {
+    if (err instanceof multer.MulterError) {
+      return res.status(400).json({ success: false, message: err.message });
+    } else if (err) {
+      return res.status(400).json({ success: false, message: err.message });
+    }
+    
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No image uploaded.' });
+    }
+    
+    // Normalize path to use forward slashes for URLs
+    const imageUrl = '/uploads/' + req.file.filename;
+    res.json({ success: true, imgUrl: imageUrl });
   });
 });
 

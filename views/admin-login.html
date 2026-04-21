@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MONARCH LABS — ADMIN TERMINAL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #050810;
+      --surface: #0d1117;
+      --border: #1e2d40;
+      --accent: #f7c948;
+      --accent2: #e63946;
+      --text: #c9d8e8;
+      --muted: #4a6080;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      font-family: 'Share Tech Mono', monospace;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .login-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      width: 100%;
+      max-width: 420px;
+      padding: 40px;
+      position: relative;
+    }
+
+    .login-container::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--accent2);
+    }
+
+    .logo {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--accent2);
+      text-align: center;
+      letter-spacing: 6px;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 3px;
+      margin-bottom: 40px;
+    }
+
+    .input-group {
+      margin-bottom: 24px;
+    }
+
+    .input-label {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+
+    .input-field {
+      width: 100%;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid var(--border);
+      padding: 14px 16px;
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 14px;
+      letter-spacing: 2px;
+      transition: border-color 0.2s;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: var(--accent2);
+    }
+
+    .submit-btn {
+      width: 100%;
+      background: var(--accent2);
+      color: #fff;
+      border: none;
+      padding: 16px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: opacity 0.2s, box-shadow 0.2s;
+    }
+
+    .submit-btn:hover {
+      box-shadow: 0 0 20px rgba(230, 57, 70, 0.4);
+    }
+
+    .error-msg {
+      color: var(--accent2);
+      font-size: 11px;
+      text-align: center;
+      margin-top: 16px;
+      letter-spacing: 1px;
+      height: 14px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <div class="logo">TERMINAL</div>
+    <div class="subtitle">AUTHORIZED PERSONNEL ONLY</div>
+
+    <form id="admin-form">
+      <div class="input-group">
+        <label class="input-label">USERNAME ID</label>
+        <input type="text" id="username" class="input-field" required autocomplete="off" spellcheck="false">
+      </div>
+      
+      <div class="input-group">
+        <label class="input-label">SECURITY DECRYPT</label>
+        <input type="password" id="password" class="input-field" required>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submit-btn">AUTHENTICATE</button>
+      <div class="error-msg" id="error-msg">ACCESS DENIED</div>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('admin-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const errorMsg = document.getElementById('error-msg');
+      const btn = document.getElementById('submit-btn');
+      
+      btn.textContent = 'VERIFYING...';
+      btn.style.pointerEvents = 'none';
+      errorMsg.style.display = 'none';
+      
+      try {
+        const res = await fetch('/admin/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          btn.textContent = 'GRANTED';
+          btn.style.background = '#4ade80';
+          btn.style.color = '#000';
+          setTimeout(() => {
+            window.location.href = data.redirect;
+          }, 800);
+        } else {
+          throw new Error(data.message || 'Access Denied');
+        }
+      } catch (err) {
+        errorMsg.textContent = err.message;
+        errorMsg.style.display = 'block';
+        btn.textContent = 'AUTHENTICATE';
+      } finally {
+        btn.style.pointerEvents = 'all';
+      }
+    });
+  </script>
+</body>
+</html>

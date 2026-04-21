@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MONARCH LABS — ADMIN TERMINAL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #050810;
+      --surface: #0d1117;
+      --surface2: #111820;
+      --border: #1e2d40;
+      --accent: #f7c948;
+      --accent2: #e63946;
+      --green: #4ade80;
+      --blue: #60a5fa;
+      --text: #c9d8e8;
+      --muted: #4a6080;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      font-family: 'Share Tech Mono', monospace;
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .topbar {
+      background: rgba(5,8,16,0.95);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--accent2);
+      letter-spacing: 4px;
+    }
+
+    .nav-badge {
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 3px 8px;
+      margin-left: 16px;
+    }
+
+    .logout-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .logout-btn:hover {
+      border-color: var(--accent2);
+      color: var(--accent2);
+    }
+
+    .content {
+      padding: 32px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 24px;
+    }
+
+    .title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 22px;
+      color: var(--text);
+      letter-spacing: 2px;
+    }
+
+    .add-btn {
+      background: var(--green);
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: opacity 0.2s;
+    }
+
+    .add-btn:hover { opacity: 0.8; }
+
+    .table-wrapper {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    th {
+      background: var(--surface2);
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 2px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background: rgba(255,255,255,0.02);
+    }
+
+    .td-img img {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+      background: #000;
+      border: 1px solid var(--border);
+      padding: 4px;
+    }
+
+    .action-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      padding: 6px 12px;
+      cursor: pointer;
+      margin-right: 8px;
+      transition: all 0.2s;
+    }
+
+    .action-btn.edit:hover { border-color: var(--blue); color: var(--blue); }
+    .action-btn.del:hover { border-color: var(--accent2); color: var(--accent2); }
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      width: 100%; max-width: 500px;
+      max-height: 90vh;
+      display: flex; flex-direction: column;
+    }
+
+    .modal-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 16px; letter-spacing: 2px; color: var(--accent);
+    }
+
+    .close-btn { background: none; border: none; color: var(--muted); font-size: 24px; cursor: pointer; }
+    .close-btn:hover { color: var(--accent2); }
+
+    .modal-body {
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 6px; }
+    .form-control {
+      width: 100%;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+    }
+    .form-control:focus { outline: none; border-color: var(--accent); }
+    
+    .file-upload-wrap {
+      display: flex; gap: 8px; margin-top: 8px;
+    }
+    
+    .file-input-btn {
+      position: relative;
+      overflow: hidden;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px;
+      cursor: pointer;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      text-align: center;
+      flex: 1;
+    }
+    .file-input-btn input[type=file] {
+      position: absolute; top: 0; right: 0; min-width: 100%; min-height: 100%;
+      font-size: 100px; text-align: right; opacity: 0; outline: none; background: white; cursor: inherit; display: block;
+    }
+
+    .modal-footer {
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: flex-end; gap: 12px;
+    }
+
+    .btn {
+      padding: 10px 20px; font-family: 'Share Tech Mono', monospace; font-size: 12px;
+      cursor: pointer; border: none; letter-spacing: 1px; font-weight: bold;
+    }
+    .btn-cancel { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .btn-save { background: var(--accent); color: #000; }
+    
+    .btn:disabled {
+      opacity: 0.5; cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div style="display:flex; align-items:center;">
+      <div class="logo">MONARCH LABS</div>
+      <div class="nav-badge">ADMIN CONTROL</div>
+    </div>
+    <form action="/admin/logout" method="POST">
+      <button type="submit" class="logout-btn">TERMINATE SESSION</button>
+    </form>
+  </header>
+
+  <main class="content">
+    <div class="header-row">
+      <div class="title">PRODUCT DATABASE</div>
+      <button class="add-btn" onclick="openModal()">+ ADD PRODUCT</button>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>IMAGE</th>
+            <th>NAME</th>
+            <th>RARITY</th>
+            <th>PRICE</th>
+            <th>BADGE</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-header">
+        <span id="modal-title">ADD PRODUCT</span>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="product-form">
+          <input type="hidden" id="prod-id">
+          
+          <div class="form-group">
+            <label>PRODUCT NAME</label>
+            <input type="text" id="prod-name" class="form-control" required>
+          </div>
+          
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+            <div class="form-group">
+              <label>PRICE (£)</label>
+              <input type="number" step="0.01" id="prod-price" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label>RARITY / CATEGORY</label>
+              <select id="prod-rarity" class="form-control" required>
+                <option value="INJECTABLES">INJECTABLES</option>
+                <option value="ORALS">ORALS</option>
+                <option value="PEPTIDES">PEPTIDES</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+            <div class="form-group">
+              <label>SET / SUBTITLE</label>
+              <input type="text" id="prod-set" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>CONDITION</label>
+              <input type="text" id="prod-condition" class="form-control">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>BADGE (Optional)</label>
+            <select id="prod-badge" class="form-control">
+              <option value="">None</option>
+              <option value="HOT">HOT</option>
+              <option value="NEW">NEW</option>
+              <option value="RARE">RARE</option>
+              <option value="LIMITED">LIMITED</option>
+              <option value="DEAL">DEAL</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>IMAGE URL</label>
+            <input type="text" id="prod-img" class="form-control" placeholder="/image.png or https://...">
+            <div class="file-upload-wrap">
+              <div class="file-input-btn">
+                <span>UPLOAD NEW IMAGE FILE</span>
+                <input type="file" id="image-upload" accept=".jpg,.jpeg,.png,.webp,.gif">
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-cancel" onclick="closeModal()">CANCEL</button>
+        <button class="btn btn-save" onclick="saveProduct()" id="save-btn">SAVE SECURELY</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let products = [];
+    const modal = document.getElementById('modal');
+    
+    async function loadProducts() {
+      const res = await fetch('/api/admin/products');
+      products = await res.json();
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('table-body');
+      tbody.innerHTML = '';
+      
+      products.forEach(p => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${p.id}</td>
+          <td class="td-img"><img src="${p.img || '/placeholder.png'}" onerror="this.src='/injectable_vial_premium.png'"></td>
+          <td style="font-weight:bold">${p.name}</td>
+          <td>${p.rarity}</td>
+          <td style="color:var(--accent)">£${parseFloat(p.price).toFixed(2)}</td>
+          <td>${p.badge ? `<span style="background:var(--accent2);color:#fff;padding:2px 6px;font-size:9px;">${p.badge}</span>` : '-'}</td>
+          <td>
+            <button class="action-btn edit" onclick="openModal(${p.id})">EDIT</button>
+            <button class="action-btn del" onclick="deleteProduct(${p.id})">DELETE</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openModal(id = null) {
+      document.getElementById('image-upload').value = '';
+      
+      if (id) {
+        document.getElementById('modal-title').textContent = 'EDIT PRODUCT ID: ' + id;
+        const p = products.find(x => x.id === id);
+        document.getElementById('prod-id').value = p.id;
+        document.getElementById('prod-name').value = p.name;
+        document.getElementById('prod-price').value = p.price;
+        document.getElementById('prod-rarity').value = p.rarity;
+        document.getElementById('prod-set').value = p.set || '';
+        document.getElementById('prod-condition').value = p.condition || '';
+        document.getElementById('prod-badge').value = p.badge || '';
+        document.getElementById('prod-img').value = p.img || '';
+      } else {
+        document.getElementById('modal-title').textContent = 'ADD NEW PRODUCT';
+        document.getElementById('product-form').reset();
+        document.getElementById('prod-id').value = '';
+      }
+      modal.classList.add('open');
+    }
+
+    function closeModal() {
+      modal.classList.remove('open');
+    }
+
+    // Auto upload image when selected
+    document.getElementById('image-upload').addEventListener('change', async function(e) {
+      if (!this.files.length) return;
+      const file = this.files[0];
+      
+      const formData = new FormData();
+      formData.append('image', file);
+      
+      const saveBtn = document.getElementById('save-btn');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'UPLOADING...';
+      
+      try {
+        const res = await fetch('/api/admin/upload-image', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('prod-img').value = data.imgUrl;
+        } else {
+          alert('Upload failed: ' + data.message);
+        }
+      } catch (err) {
+        alert('Upload Error');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'SAVE SECURELY';
+      }
+    });
+
+    async function saveProduct() {
+      const id = document.getElementById('prod-id').value;
+      const data = {
+        name: document.getElementById('prod-name').value,
+        price: document.getElementById('prod-price').value,
+        rarity: document.getElementById('prod-rarity').value,
+        set: document.getElementById('prod-set').value,
+        condition: document.getElementById('prod-condition').value,
+        badge: document.getElementById('prod-badge').value,
+        img: document.getElementById('prod-img').value
+      };
+      
+      if(!data.name || !data.price || !data.rarity) return alert('Name, Price and Rarity are required');
+
+      const url = id ? `/api/admin/product/${id}` : '/api/admin/product';
+      const method = id ? 'PUT' : 'POST';
+      
+      const saveBtn = document.getElementById('save-btn');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'SAVING...';
+
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const resData = await res.json();
+        
+        if (resData.success) {
+          closeModal();
+          loadProducts();
+        } else {
+          alert(resData.message || 'Error saving product');
+        }
+      } catch (err) {
+        alert('Request failed');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'SAVE SECURELY';
+      }
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('Are you certain you want to permanently delete this product?')) return;
+      
+      try {
+        const res = await fetch(`/api/admin/product/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+          loadProducts();
+        } else {
+          alert('Error deleting');
+        }
+      } catch (err) {
+        alert('Request failed');
+      }
+    }
+
+    // Initialize
+    loadProducts();
+  </script>
+</body>
+</html>
