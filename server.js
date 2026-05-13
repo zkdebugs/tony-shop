@@ -9,10 +9,39 @@ const multer = require('multer');
 require('dotenv').config();
 const app = express();
 const PORT = 3000;
-const ACCESS_CODE = process.env.ACCESS_CODE;
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'password';
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(64).toString('hex');
+
+let appConfig = {
+  ACCESS_CODE: process.env.ACCESS_CODE || 'TREX_T0NY'
+};
+
+function loadConfig() {
+  try {
+    const configPath = path.join(__dirname, 'config.json');
+    if (fs.existsSync(configPath)) {
+      const data = fs.readFileSync(configPath, 'utf8');
+      const parsed = JSON.parse(data);
+      if (parsed && parsed.ACCESS_CODE) {
+        appConfig.ACCESS_CODE = parsed.ACCESS_CODE;
+      }
+    }
+  } catch (err) {
+    console.error('Error loading config.json:', err.message);
+  }
+}
+
+function saveConfig() {
+  try {
+    const configPath = path.join(__dirname, 'config.json');
+    fs.writeFileSync(configPath, JSON.stringify(appConfig, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Error saving config.json:', err.message);
+  }
+}
+
+loadConfig();
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -124,7 +153,7 @@ app.post('/auth/login', loginLimiter, (req, res) => {
   const { code, age_verify } = req.body;
   if (!age_verify) return res.status(400).json({ success: false, message: 'Age verification required.' });
   const provided = Buffer.from(String(code));
-  const expected = Buffer.from(ACCESS_CODE);
+  const expected = Buffer.from(appConfig.ACCESS_CODE);
   if (provided.length !== expected.length || !crypto.timingSafeEqual(provided, expected)) {
     return res.status(401).json({ success: false, message: 'Invalid access code.' });
   }
@@ -239,6 +268,21 @@ app.delete('/api/admin/product/:id', requireAdminAuth, (req, res) => {
   products.splice(index, 1);
   saveProducts(products);
   res.json({ success: true });
+});
+
+// Admin settings endpoints
+app.get('/api/admin/config', requireAdminAuth, (req, res) => {
+  res.json({ success: true, config: appConfig });
+});
+
+app.post('/api/admin/config', requireAdminAuth, (req, res) => {
+  const { accessCode } = req.body;
+  if (!accessCode || typeof accessCode !== 'string' || accessCode.trim().length < 4 || accessCode.trim().length > 64) {
+    return res.status(400).json({ success: false, message: 'Access code must be between 4 and 64 characters.' });
+  }
+  appConfig.ACCESS_CODE = accessCode.trim();
+  saveConfig();
+  res.json({ success: true, message: 'Website access code updated successfully.' });
 });
 
 // Secure image upload endpoint for Admin
@@ -438,6 +482,6 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`\nMONARCH LABS running at http://localhost:${PORT}`);
-  console.log(`Access code: ${ACCESS_CODE}\n`);
+  console.log(`\nSHshop running at http://localhost:${PORT}`);
+  console.log(`Access code: ${appConfig.ACCESS_CODE}\n`);
 });

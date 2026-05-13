@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MONARCH LABS — CHECKOUT</title>
+  <title>SHshop — CHECKOUT</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap"
     rel="stylesheet">
@@ -713,7 +713,7 @@
 
 <body>
   <header class="topbar">
-    <span onclick="window.location.href='/catalog'" class="logo" style="cursor:pointer;">MONARCH LABS</span>
+    <span onclick="window.location.href='/catalog'" class="logo" style="cursor:pointer; display:inline-flex; align-items:center;"><img src="/logo.png" alt="SHshop" style="height:32px; width:auto;"></span>
     <button onclick="window.location.href='/catalog'" class="back-btn"
       style="background:none;border:1px solid var(--border);color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;padding:8px 16px;cursor:pointer;text-decoration:none;transition:all 0.2s;"><svg
         xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 16 16" fill="currentColor"
@@ -765,27 +765,18 @@
         <div class="panel" style="margin-bottom:20px">
           <div class="panel-title">DELIVERY METHOD</div>
           <div class="option-list" id="delivery-options">
-            <div class="option-item selected" data-cost="6" data-label="Delivery in Person"
+            <div class="option-item selected" data-cost="0" data-label="Message for in person"
               onclick="selectDelivery(this)">
-              <div class="option-radio"></div><span class="option-label">Delivery in Person</span><span
-                class="option-price">£6</span>
+              <div class="option-radio"></div><span class="option-label">Message for in person</span><span
+                class="option-price">£0</span>
             </div>
-            <div class="option-item" data-cost="6" data-label="Tracked 24 Recorded" onclick="selectDelivery(this)">
-              <div class="option-radio"></div><span class="option-label">Tracked 24 Recorded</span><span
-                class="option-price">£6</span>
+            <div class="option-item" data-cost="0" data-label="Crypto" onclick="selectDelivery(this)">
+              <div class="option-radio"></div><span class="option-label">Crypto</span><span
+                class="option-price">£0</span>
             </div>
-            <div class="option-item" data-cost="10" data-label="Special Delivery by 1pm" onclick="selectDelivery(this)">
-              <div class="option-radio"></div><span class="option-label">Special Delivery by 1pm</span><span
+            <div class="option-item" data-cost="10" data-label="Tracked delivery 24hrs" onclick="selectDelivery(this)">
+              <div class="option-radio"></div><span class="option-label">Tracked delivery 24hrs</span><span
                 class="option-price">£10</span>
-            </div>
-            <div class="option-item" data-cost="14" data-label="Saturday Special Delivery"
-              onclick="selectDelivery(this)">
-              <div class="option-radio"></div><span class="option-label">Saturday Special Delivery</span><span
-                class="option-price">£14</span>
-            </div>
-            <div class="option-item" data-cost="25" data-label="International Delivery" onclick="selectDelivery(this)">
-              <div class="option-radio"></div><span class="option-label">International Delivery</span><span
-                class="option-price">£25</span>
             </div>
           </div>
           <div class="hint-row"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 16 16"
@@ -860,8 +851,8 @@
 
   <script>
     let cart = JSON.parse(localStorage.getItem('MONARCH_LABS_cart') || '[]');
-    let selectedDeliveryCost = 6;
-    let selectedDeliveryLabel = 'Delivery in Person';
+    let selectedDeliveryCost = 0;
+    let selectedDeliveryLabel = 'Message for in person';
     let selectedPaymentLabel = 'Bank Transfer';
     let selectedPaymentType = 'traditional';
     let selectedCrypto = null;

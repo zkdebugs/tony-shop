@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MONARCH LABS — CATALOG</title>
+  <title>SHshop — CATALOG</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap"
     rel="stylesheet">
@@ -738,7 +738,7 @@
     </svg> PREMIUM PHARMACEUTICALS — DISCREET DELIVERY — LAB TESTED</div>
   <header class="topbar">
     <div class="topbar-left">
-      <a href="/catalog" class="logo">MONARCH LABS</a>
+      <a href="/catalog" class="logo" style="display: flex; align-items: center;"><img src="/logo.png" alt="SHshop" style="height: 32px; width: auto;"></a>
       <span class="nav-badge">PHARMACY</span>
     </div>
     <div class="topbar-right">
@@ -828,7 +828,7 @@
 
     let cart = JSON.parse(localStorage.getItem('MONARCH_LABS_cart') || '[]');
     let activeCategory = 'ALL';
-    const categories = ['ALL', 'INJECTABLES', 'ORALS', 'PEPTIDES'];
+    const categories = ['ALL', 'INJECTABLES', 'ORALS', 'PEPTIDES', 'SARMS', 'PCT', 'GENERAL MEDS'];
 
     const filterContainer = document.getElementById('filter-buttons');
     const mobileFilterContainer = document.getElementById('mobile-categories');

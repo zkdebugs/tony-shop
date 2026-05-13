@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MONARCH LABS — ADMIN TERMINAL</title>
+  <title>SHshop — ADMIN TERMINAL</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
@@ -273,7 +273,7 @@
 
   <header class="topbar">
     <div style="display:flex; align-items:center;">
-      <div class="logo">MONARCH LABS</div>
+      <img src="/logo.png" alt="SHshop" style="height: 30px; margin-right: 16px;">
       <div class="nav-badge">ADMIN CONTROL</div>
     </div>
     <form action="/admin/logout" method="POST">
@@ -282,6 +282,18 @@
   </header>
 
   <main class="content">
+    <div class="panel" style="background:var(--surface); border:1px solid var(--border); padding:24px; margin-bottom:32px;">
+      <div class="title" style="font-size:16px; margin-bottom:16px; color:var(--accent);">WEBSITE CONFIGURATION</div>
+      <div style="display:flex; gap:16px; align-items:flex-end;">
+        <div class="form-group" style="flex:1; margin-bottom:0;">
+          <label>MAIN WEBSITE ACCESS CODE</label>
+          <input type="text" id="site-access-code" class="form-control" style="font-size:16px; letter-spacing:2px;">
+        </div>
+        <button class="btn btn-save" style="height:38px;" onclick="updateConfig()">UPDATE CODE</button>
+      </div>
+      <div id="config-msg" style="font-size:11px; color:var(--green); margin-top:8px; display:none;">ACCESS CODE UPDATED</div>
+    </div>
+
     <div class="header-row">
       <div class="title">PRODUCT DATABASE</div>
       <button class="add-btn" onclick="openModal()">+ ADD PRODUCT</button>
@@ -333,6 +345,9 @@
                 <option value="INJECTABLES">INJECTABLES</option>
                 <option value="ORALS">ORALS</option>
                 <option value="PEPTIDES">PEPTIDES</option>
+                <option value="SARMS">SARMS</option>
+                <option value="PCT">PCT</option>
+                <option value="GENERAL MEDS">GENERAL MEDS</option>
               </select>
             </div>
           </div>
@@ -527,8 +542,46 @@
       }
     }
 
+    async function loadConfig() {
+      try {
+        const res = await fetch('/api/admin/config');
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('site-access-code').value = data.config.ACCESS_CODE;
+        }
+      } catch(err) {
+        console.error('Failed to load configuration.');
+      }
+    }
+
+    async function updateConfig() {
+      const accessCode = document.getElementById('site-access-code').value;
+      const msg = document.getElementById('config-msg');
+      try {
+        const res = await fetch('/api/admin/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ accessCode })
+        });
+        const data = await res.json();
+        if (data.success) {
+          msg.style.color = 'var(--green)';
+          msg.textContent = 'ACCESS CODE UPDATED SUCCESSFULLY';
+          msg.style.display = 'block';
+          setTimeout(() => msg.style.display = 'none', 3000);
+        } else {
+          msg.style.color = 'var(--accent2)';
+          msg.textContent = (data.message || 'UPDATE FAILED').toUpperCase();
+          msg.style.display = 'block';
+        }
+      } catch (err) {
+        alert('Request failed');
+      }
+    }
+
     // Initialize
     loadProducts();
+    loadConfig();
   </script>
 </body>
 </html>
